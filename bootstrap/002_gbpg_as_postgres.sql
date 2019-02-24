@@ -1,6 +1,6 @@
-create schema app_public; -- public; 
-create schema app_private;
-create schema app_hidden; -- public, but not exposed via postgraphile
+create schema app_public; -- auto-generated queries and mutations
+create schema app_hidden; -- available to app_user role, but not exposed via postgraphile
+create schema app_private; -- private; data not available to postgraphile
 
 -- ensure migrations succeed
 grant all privileges on schema public to greatbear;
@@ -46,4 +46,8 @@ create extension "pgcrypto";
  *   public is not a great idea with postgraphile; the app_* prefixes
  *   give us a quick view into overall visibility which ends up being
  *   super-helpful during development.
+ *
+ * - You might find it useful for app_admin to have access to some data
+ *   in the app_private schema. In this case, you'll need to grant usage
+ *   on that schema to app_admin.
  */

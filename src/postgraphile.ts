@@ -28,6 +28,8 @@ const commonOptions = (): PostGraphileOptions => ({
   ],
   // adds a *List that reduces boilerplate when we don't need (relay) pagination
   simpleCollections: 'both',
+  // 
+  subscriptions: true,
 });
 
 /**
