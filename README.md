@@ -1,9 +1,9 @@
 # Typescript / Express / Knex Template
 
-Backend programming, configured for PostgreSQL.
+### Getting started
 
-Useful commands include
-* `yarn dev`
-* `yarn knex migrate:make <name>`
-* `pgsh clone, pgsh switch, pgsh destroy`
-* `pgsh up`
+1. `cp .env.example .env` and fill in details.
+2. Execute the SQL in `bootstrap/` as superuser, first in the `postgres` database and then
+   in the `gbpg` database (or whatever you choose to call it).
+3. Make sure your connection string points to the database you just created,
+   then run `pgsh up` to migrate to the latest version.

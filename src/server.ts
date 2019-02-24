@@ -5,8 +5,6 @@ import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
-import knex from './knex';
-
 if (!process.env.SESSION_SECRET) {
   console.error('Please prove a SESSION_SECRET in your .env file.');
   process.exit(1);
