@@ -1,5 +1,3 @@
-import http from 'http';
-
 export interface User {
   id: number,
   isAdmin: boolean,

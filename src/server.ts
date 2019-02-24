@@ -1,9 +1,14 @@
 import 'dotenv/config';
 
+import './custom-types';
+
 import express from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+
+import attachPostGraphile from './postgraphile';
+import { databaseUrl } from './knex';
 
 if (!process.env.SESSION_SECRET) {
   console.error('Please prove a SESSION_SECRET in your .env file.');
@@ -33,12 +38,8 @@ app.use(
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 'Ready to build something awesome?',
-  });
+attachPostGraphile(app, databaseUrl).then(() => {
+  const port = process.env.PORT || 3000;
+  app.listen(port , () =>
+    console.log('App running at http://localhost:' + port));
 });
-
-const port = process.env.PORT || 3000;
-app.listen(port , () =>
-  console.log('App running at http://localhost:' + port));

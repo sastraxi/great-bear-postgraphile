@@ -5,7 +5,12 @@ import {
   postgraphile,
   createPostGraphileSchema,
   Plugin,
+  PostGraphileOptions,
 } from 'postgraphile';
+
+// @ts-ignore
+import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
+
 
 /**
  * Stitched-in schemas.
@@ -15,8 +20,14 @@ const EXTEND_SCHEMA_PLUGINS: Plugin[] = [];
 /**
  * Options common to schema-mode and middleware-mode.
  */
-const commonOptions = () => ({
-  appendPlugins: EXTEND_SCHEMA_PLUGINS,
+const commonOptions = (): PostGraphileOptions => ({
+  appendPlugins: [
+    // allOrders -> orders, cartItemsByCartItemId -> cartItems
+    PgSimplifyInflectorPlugin,
+    ...EXTEND_SCHEMA_PLUGINS,
+  ],
+  // adds a *List that reduces boilerplate when we don't need (relay) pagination
+  simpleCollections: 'both',
 });
 
 /**
@@ -25,7 +36,6 @@ const commonOptions = () => ({
  * these settings from queries and stored functions.
  */
 export const pgSettingsFromRequest = (req: http.IncomingMessage) => ({
-  abc: req.headers,
   role: req.user && req.user.isAdmin ? 'app_admin' : 'app_user',
   ...(req.user
     ? { 'jwt.claims.user_id': String(req.user.id) }
@@ -61,8 +71,8 @@ export const createSchema = (databaseUrl: string) =>
 export default async (
   app: Express.Application,
   databaseUrl: string,
-  extraContext: object,
-) => {
+  extraContext: object = {},
+): Promise<Express.Application> => {
   // The GraphQL endpoint
   app.use(
     postgraphile(databaseUrl, 'app_public', {
@@ -87,6 +97,6 @@ export default async (
     return next();
   });
 
-  return true;
+  return app;
 };
 
