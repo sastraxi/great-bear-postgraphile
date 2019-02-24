@@ -11,11 +11,14 @@ import {
 // @ts-ignore
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
+import CartSchema from './schema/cart';
 
 /**
  * Stitched-in schemas.
  */
-const EXTEND_SCHEMA_PLUGINS: Plugin[] = [];
+const EXTEND_SCHEMA_PLUGINS: Plugin[] = [
+  CartSchema,
+];
 
 /**
  * Options common to schema-mode and middleware-mode.
@@ -54,8 +57,8 @@ export const pgSettingsFromRequest = (req: http.IncomingMessage) => ({
  */
 export const contextFromRequest = (req: http.IncomingMessage) => ({
   ip: req.ip,
-  userId: req.user && req.user.id,
-  isAdmin: req.user && (req.user.isAdmin || false),
+  user: req.user,
+  sessionId: req.session && req.session.id,
 });
 
 /**

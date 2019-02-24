@@ -1,3 +1,5 @@
+import Knex from 'knex';
+
 export interface User {
   id: number,
   isAdmin: boolean,
@@ -5,6 +7,13 @@ export interface User {
 
 export interface Session {
   id: string,
+}
+
+export interface PostGraphileContext {
+  ip: string,
+  user?: User,
+  sessionId?: string,
+  knex: Knex,
 }
 
 declare module 'http' {

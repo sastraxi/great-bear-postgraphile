@@ -8,7 +8,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 
 import attachPostGraphile from './postgraphile';
-import { databaseUrl } from './knex';
+import knex, { databaseUrl } from './knex';
 
 if (!process.env.SESSION_SECRET) {
   console.error('Please prove a SESSION_SECRET in your .env file.');
@@ -18,10 +18,10 @@ if (!process.env.SESSION_SECRET) {
 const app = express();
 
 app.use(session({
-  name: 'sid',
+  name: 'great-bear-postgraphile.sid',
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 120,
   },
@@ -38,7 +38,7 @@ app.use(
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-attachPostGraphile(app, databaseUrl).then(() => {
+attachPostGraphile(app, databaseUrl, { knex }).then(() => {
   const port = process.env.PORT || 3000;
   app.listen(port , () =>
     console.log('App running at http://localhost:' + port));
