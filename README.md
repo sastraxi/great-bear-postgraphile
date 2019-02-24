@@ -1,4 +1,4 @@
-# Typescript / Express / Knex Template
+# Great Bear (PostGraphile)
 
 ### Getting started
 
