@@ -4,7 +4,7 @@ import createDebugger from 'debug';
 
 const debug = createDebugger('gbpg:pubsub');
 
-let pubsub: PubSub = null;
+export let pubsub: PubSub = null;
 
 type ColumnType = string[] | "any";
 type AnyMap = {[key: string]: any};
@@ -18,7 +18,7 @@ interface MessagePayload {
 
 type ListenerFunction = (msg: MessagePayload) => any;
 
-export const plugin: PostGraphilePlugin = {
+const plugin: PostGraphilePlugin = {
   ["postgraphile:options"](incomingOptions) {
     const { graphileBuildOptions: { pubsub: recvPubSub } } = incomingOptions;
     pubsub = recvPubSub;
@@ -32,33 +32,31 @@ export const plugin: PostGraphilePlugin = {
 // - can run on execute; TG_OP TG_TABLE_SCHEMA TG_TABLE_NAME NEW OLD
 // - see how hasura builds uuids
 
-export const api = {
-  addListener: (
-    qualifiedTable: string,
-    operation = 'insert',
-    columns: ColumnType = "any",
-    listener: ListenerFunction,
-  ): Promise<number> => {
+export const addListener = (
+  qualifiedTable: string,
+  operation = 'insert',
+  columns: ColumnType = "any",
+  listener: ListenerFunction,
+): Promise<number> => {
 
-    const topic = `tbl:${operation}:${qualifiedTable}`;
-    if (topic.length > 63) {
-      debug(`topic length over 63: "${topic}"`);
-    }
+  const topic = `tbl:${operation}:${qualifiedTable}`;
+  if (topic.length > 63) {
+    debug(`topic length over 63: "${topic}"`);
+  }
 
-    return pubsub.subscribe(`tbl:${operation}:${qualifiedTable}`, (msg: MessagePayload) => {
-      if (columns !== "any") {
-        const { old, new: newRecord } = msg;        
-        if (!columns.some(col => newRecord[col] !== old[col])) {
-          debug(`${operation}(${qualifiedTable}): no modified columns: ${columns}`);
-          return;
-        }
+  return pubsub.subscribe(`tbl:${operation}:${qualifiedTable}`, (msg: MessagePayload) => {
+    if (columns !== "any") {
+      const { old, new: newRecord } = msg;        
+      if (!columns.some(col => newRecord[col] !== old[col])) {
+        debug(`${operation}(${qualifiedTable}): no modified columns: ${columns}`);
+        return;
       }
-      listener(msg);
-    });
-  },
-
-  removeListener: (listenerId: number) =>
-    pubsub.unsubscribe(listenerId),
+    }
+    listener(msg);
+  });
 };
 
-export default pubsub;
+export const removeListener = (listenerId: number) =>
+  pubsub.unsubscribe(listenerId);
+
+export default plugin;

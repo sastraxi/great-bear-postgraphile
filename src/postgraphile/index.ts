@@ -17,7 +17,7 @@ import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
 import session from '../session';
 import CartSchemaPlugin from './cart';
-import { plugin as GetPubSubPlugin } from './get-pubsub';
+import GetPubSubPlugin from './get-pubsub';
 
 const REFLECT_SCHEMA = 'app_public';
 
