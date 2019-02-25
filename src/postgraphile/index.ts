@@ -8,6 +8,7 @@ import {
   Plugin,
   makePluginHook,
 } from 'postgraphile';
+import passport from 'passport';
 
 // FIXME: why does ts complain when importing directly from postgraphile?
 import { PostGraphileOptions } from 'postgraphile/build/interfaces';
@@ -48,7 +49,12 @@ const COMMON_OPTIONS: PostGraphileOptions = {
     GetPubSubPlugin,
   ]),
   websocketMiddlewares: [
+    // the websocket server is separate from the main express server; any
+    // middleware we want to run for Subscriptions has to be listed here as well.
+    // TODO: reduce duplication between this and server.ts / passport.ts
     session,
+    passport.initialize(),
+    passport.session(),
   ],
 };
 

@@ -6,7 +6,7 @@ const debug = createDebugger('gbpg:pubsub');
 
 export let pubsub: PubSub = null;
 
-type OperationName = "insert" | "update" | "delete";
+export type OperationName = "insert" | "update" | "delete";
 type ColumnType = string[] | "any";
 type AnyMap = {[key: string]: any};
 

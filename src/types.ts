@@ -1,5 +1,10 @@
 import Knex from 'knex';
 
+export interface LatLon {
+  lat: number,
+  lon: number,
+}
+
 export interface User {
   id: number,
   isAdmin: boolean,
