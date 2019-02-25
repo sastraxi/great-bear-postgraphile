@@ -1,7 +1,7 @@
 import { PostGraphileContext } from '../custom-types';
 import { gql, makeExtendSchemaPlugin, embed } from 'graphile-utils';
 import { skip, combineResolvers } from 'graphql-resolvers';
-import { sql, QueryBuilder } from 'graphile-build-pg';
+import { QueryBuilder } from 'graphile-build-pg';
 
 interface CartParams {
   itemId: number
@@ -21,12 +21,12 @@ const NOT_LOGGED_IN_MSG = 'You must be logged in to interact with this resource.
 const NO_SESSION_ID_MSG = 'No session ID is available on your request!';
 
 const cartTopic = ({ id }: IdParam) =>
-  `graphql:cart:${id}`;
+  Promise.resolve(`graphql:cart:${id}`);
 
 const typeDefs = gql`
   type CartSubscriptionPayload {
-    event: String
     cart: Cart
+    event: String
   }
 
   extend type Query {
@@ -40,7 +40,7 @@ const typeDefs = gql`
   }
 
   extend type Subscription {
-    cart(id: Int!): CartSubscriptionPayload @pgSubscription(topic: ${embed(cartTopic)})
+     cart(id: Int!): CartSubscriptionPayload @pgSubscription(topic: ${embed(cartTopic)})
   }
 `;
 
@@ -160,7 +160,7 @@ const resetCart = async(
 /**
  * Wrap our resolver delegates in middleware.
  */
-const resolvers = {
+const resolvers = (sql: any) => ({
   Query: {
     sessionId: (_root: any, _params: any, { sessionId }: PostGraphileContext) => sessionId,
   },
@@ -188,20 +188,17 @@ const resolvers = {
       const rows = await selectGraphQLResultFromTable(
         sql.fragment`app_public.cart`,
         (tableAlias: any, sqlBuilder: QueryBuilder) => {
-          console.log('table alias:', tableAlias, 'get:', sqlBuilder.getTableAlias());
           sqlBuilder.where(
-            sql.fragment`${sqlBuilder.getTableAlias()}.id = ${sql.value(
-              event.subject
-            )}`
+            sql.fragment`${tableAlias}.id = ${sql.value(event.subject)}`
           );
         }
       );
       return rows[0];
     },
   },
-};
+});
 
-export default makeExtendSchemaPlugin(() => ({
+export default makeExtendSchemaPlugin(({ pgSql }) => ({
   typeDefs,
-  resolvers,
+  resolvers: resolvers(pgSql),
 }));

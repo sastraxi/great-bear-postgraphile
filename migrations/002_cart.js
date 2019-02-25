@@ -9,7 +9,9 @@ exports.up = knex =>
       "image_url" text
     );
 
-    /* NB: no RLS for item; public data */
+        /* NB: no RLS for item; public data */
+        grant select on app_public."item" to app_user;
+        grant select, update, insert, delete on app_public."item" to app_admin;
 
     -- -- -- --
 

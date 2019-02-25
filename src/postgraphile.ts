@@ -1,29 +1,35 @@
 import http from 'http';
 import Express from 'express';
 import expressPlayground from 'graphql-playground-middleware-express';
+import PubSubPlugin from '@graphile/pg-pubsub';
 import {
   postgraphile,
   createPostGraphileSchema,
   Plugin,
-  PostGraphileOptions,
+  makePluginHook,
 } from 'postgraphile';
+
+// FIXME: why does ts complain when importing directly from postgraphile?
+import { PostGraphileOptions } from 'postgraphile/build/interfaces';
 
 // @ts-ignore
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
-import CartSchema from './schema/cart';
+import CartSchemaPlugin from './schema/cart';
+
+const REFLECT_SCHEMA = 'app_public';
 
 /**
  * Stitched-in schemas.
  */
 const EXTEND_SCHEMA_PLUGINS: Plugin[] = [
-  CartSchema,
+  CartSchemaPlugin,
 ];
 
 /**
  * Options common to schema-mode and middleware-mode.
  */
-const commonOptions = (): PostGraphileOptions => ({
+const COMMON_OPTIONS: PostGraphileOptions = {
   appendPlugins: [
     // allOrders -> orders, cartItemsByCartItemId -> cartItems
     PgSimplifyInflectorPlugin,
@@ -31,9 +37,9 @@ const commonOptions = (): PostGraphileOptions => ({
   ],
   // adds a *List that reduces boilerplate when we don't need (relay) pagination
   simpleCollections: 'both',
-  // 
   subscriptions: true,
-});
+  pluginHook: makePluginHook([PubSubPlugin]),
+};
 
 /**
  * Communicate user and session status to postgres.
@@ -42,9 +48,12 @@ const commonOptions = (): PostGraphileOptions => ({
  */
 export const pgSettingsFromRequest = (req: http.IncomingMessage) => ({
   role: req.user && req.user.isAdmin ? 'app_admin' : 'app_user',
+  /*
   ...(req.user
     ? { 'jwt.claims.user_id': String(req.user.id) }
     : {}),
+  */
+  'jwt.claims.user_id': '1',
   ...(req.session
     ? { 'jwt.claims.session_id': req.session.id }
     : {}),
@@ -57,7 +66,8 @@ export const pgSettingsFromRequest = (req: http.IncomingMessage) => ({
  */
 export const contextFromRequest = (req: http.IncomingMessage) => ({
   ip: req.ip,
-  user: req.user,
+  // user: req.user,
+  user: { id: 1 },
   sessionId: req.session && req.session.id,
 });
 
@@ -65,8 +75,8 @@ export const contextFromRequest = (req: http.IncomingMessage) => ({
  * Builds an executable schema; useful for testing.
  */
 export const createSchema = (databaseUrl: string) =>
-  createPostGraphileSchema(databaseUrl, 'app_public', {
-    ...commonOptions(),
+  createPostGraphileSchema(databaseUrl, REFLECT_SCHEMA, {
+    ...COMMON_OPTIONS,
   });
 
 /**
@@ -80,8 +90,8 @@ export default async (
 ): Promise<Express.Application> => {
   // The GraphQL endpoint
   app.use(
-    postgraphile(databaseUrl, 'app_public', {
-      ...commonOptions(),
+    postgraphile(databaseUrl, REFLECT_SCHEMA, {
+      ...COMMON_OPTIONS,
       graphiql: false, // created below
       additionalGraphQLContextFromRequest: (req: http.IncomingMessage) =>
         Promise.resolve({
@@ -94,7 +104,10 @@ export default async (
   );
 
   // GraphiQL, a visual editor for queries
-  const playground = expressPlayground({ endpoint: '/graphql' });
+  const playground = expressPlayground({
+    endpoint: '/graphql',
+    subscriptionEndpoint: `ws://localhost:3000/graphql`, // FIXME: env var
+  });
   app.get('/playground', (req, res, next) => {
     if (process.env.NODE_ENV === 'development' || (req.user && req.user.isAdmin)) {
       return playground(req, res, next);

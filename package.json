@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@graphile-contrib/pg-simplify-inflector": "^4.0.0-alpha.0",
+    "@graphile/pg-pubsub": "^4.4.0-alpha.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "dotenv": "^6.2.0",
