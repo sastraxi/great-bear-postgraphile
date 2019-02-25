@@ -15,6 +15,7 @@ import { PostGraphileOptions } from 'postgraphile/build/interfaces';
 // @ts-ignore
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
+import session from './session';
 import CartSchemaPlugin from './schema/cart';
 
 const REFLECT_SCHEMA = 'app_public';
@@ -39,6 +40,9 @@ const COMMON_OPTIONS: PostGraphileOptions = {
   simpleCollections: 'both',
   subscriptions: true,
   pluginHook: makePluginHook([PubSubPlugin]),
+  websocketMiddlewares: [
+    session,
+  ],
 };
 
 /**

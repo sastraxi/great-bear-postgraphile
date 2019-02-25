@@ -3,12 +3,12 @@ import 'dotenv/config';
 import './custom-types';
 
 import express from 'express';
-import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
 import attachPostGraphile from './postgraphile';
 import knex, { databaseUrl } from './knex';
+import session from './session';
 
 if (!process.env.SESSION_SECRET) {
   console.error('Please prove a SESSION_SECRET in your .env file.');
@@ -17,17 +17,7 @@ if (!process.env.SESSION_SECRET) {
 
 const app = express();
 
-app.use(session({
-  name: 'great-bear-postgraphile.sid',
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 120,
-  },
-  rolling: true,
-}));
-
+app.use(session);
 app.use(
   cors({
     origin: true,

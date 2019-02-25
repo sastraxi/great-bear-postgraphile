@@ -21,7 +21,28 @@ const NOT_LOGGED_IN_MSG = 'You must be logged in to interact with this resource.
 const NO_SESSION_ID_MSG = 'No session ID is available on your request!';
 
 const cartTopic = ({ id }: IdParam) =>
-  Promise.resolve(`graphql:cart:${id}`);
+  `graphql:cart:${id}`;
+
+const ensureCart = ({ knex, user, sessionId }: PostGraphileContext) =>
+  knex.raw(` 
+    insert into app_public."cart"
+      (session_id, user_id)
+    values
+      (?, ?)
+    on conflict
+    do nothing
+  `, [sessionId, user!.id]);
+
+const currentCartTopic = async (_args: any, context: PostGraphileContext) => {
+  const { knex, sessionId } = context;
+
+  await ensureCart(context);
+  const cart = await knex('app_public.cart')
+    .where('session_id', sessionId)
+    .first('id');
+
+  return cartTopic({ id: cart.id });
+};
 
 const typeDefs = gql`
   type CartSubscriptionPayload {
@@ -40,19 +61,9 @@ const typeDefs = gql`
   }
 
   extend type Subscription {
-     cart(id: Int!): CartSubscriptionPayload @pgSubscription(topic: ${embed(cartTopic)})
+     currentCart: CartSubscriptionPayload @pgSubscription(topic: ${embed(currentCartTopic)})
   }
 `;
-
-const ensureCart = ({ knex, user, sessionId }: PostGraphileContext) =>
-  knex.raw(` 
-    insert into app_public."cart"
-      (session_id, user_id)
-    values
-      (?, ?)
-    on conflict
-    do nothing
-  `, [sessionId, user!.id]);
 
 /**
  * A simple resolver "middleware" we can combine with other resolvers
