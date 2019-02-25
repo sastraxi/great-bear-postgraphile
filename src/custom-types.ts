@@ -16,6 +16,10 @@ export interface PostGraphileContext {
   knex: Knex,
 }
 
+export interface IdParam {
+  id: number
+}
+
 declare module 'http' {
   export interface IncomingMessage {
     user?: User,
