@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-import './custom-types';
+import './types';
 
 import express from 'express';
 import bodyParser from 'body-parser';

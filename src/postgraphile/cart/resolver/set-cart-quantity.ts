@@ -1,4 +1,4 @@
-import { PostGraphileContext } from '../../../custom-types';
+import { PostGraphileContext } from '../../../types';
 import { CartParams } from '../types';
 import ensureCart from '../ensure-cart';
 

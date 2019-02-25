@@ -1,4 +1,4 @@
-import { PostGraphileContext, IdParam } from '../../custom-types';
+import { PostGraphileContext, IdParam } from '../../types';
 import { gql, makeExtendSchemaPlugin, embed } from 'graphile-utils';
 import { combineResolvers } from 'graphql-resolvers';
 

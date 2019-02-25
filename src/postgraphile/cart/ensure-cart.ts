@@ -1,4 +1,4 @@
-import { PostGraphileContext } from '../../custom-types';
+import { PostGraphileContext } from '../../types';
 
 const ensureCart = ({ knex, user, sessionId }: PostGraphileContext) =>
   knex.raw(` 

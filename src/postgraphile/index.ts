@@ -15,8 +15,9 @@ import { PostGraphileOptions } from 'postgraphile/build/interfaces';
 // @ts-ignore
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
-import session from './session';
-import CartSchemaPlugin from './schema/cart';
+import session from '../session';
+import CartSchemaPlugin from './cart';
+import { plugin as GetPubSubPlugin } from './get-pubsub';
 
 const REFLECT_SCHEMA = 'app_public';
 
@@ -39,7 +40,13 @@ const COMMON_OPTIONS: PostGraphileOptions = {
   // adds a *List that reduces boilerplate when we don't need (relay) pagination
   simpleCollections: 'both',
   subscriptions: true,
-  pluginHook: makePluginHook([PubSubPlugin]),
+  pluginHook: makePluginHook([
+    PubSubPlugin,
+    // captures the pubsub instance used in the previous plugin
+    // and makes it available anywhere else in the program.
+    // yeah, it's pretty much a global variable... wanna fight about it?
+    GetPubSubPlugin,
+  ]),
   websocketMiddlewares: [
     session,
   ],

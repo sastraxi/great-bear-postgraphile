@@ -1,5 +1,5 @@
 import { skip } from 'graphql-resolvers';
-import { PostGraphileContext } from '../../custom-types';
+import { PostGraphileContext } from '../../types';
 
 const NOT_LOGGED_IN_MSG = 'You must be logged in to interact with this resource.';
 const NO_SESSION_ID_MSG = 'No session ID is available on your request!';
