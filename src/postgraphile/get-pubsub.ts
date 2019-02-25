@@ -6,10 +6,11 @@ const debug = createDebugger('gbpg:pubsub');
 
 export let pubsub: PubSub = null;
 
+type OperationName = "insert" | "update" | "delete";
 type ColumnType = string[] | "any";
 type AnyMap = {[key: string]: any};
 
-interface MessagePayload {
+export interface MessagePayload {
   operation: string
   old: AnyMap | null
   new: AnyMap | null
@@ -34,7 +35,7 @@ const plugin: PostGraphilePlugin = {
 
 export const addListener = (
   qualifiedTable: string,
-  operation = 'insert',
+  operation: OperationName,
   columns: ColumnType = "any",
   listener: ListenerFunction,
 ): Promise<number> => {
@@ -44,7 +45,7 @@ export const addListener = (
     debug(`topic length over 63: "${topic}"`);
   }
 
-  return pubsub.subscribe(`tbl:${operation}:${qualifiedTable}`, (msg: MessagePayload) => {
+  return pubsub.subscribe(topic, (msg: MessagePayload) => {
     if (columns !== "any") {
       const { old, new: newRecord } = msg;        
       if (!columns.some(col => newRecord[col] !== old[col])) {

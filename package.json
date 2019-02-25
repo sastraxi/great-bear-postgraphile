@@ -25,7 +25,9 @@
     "graphql-playground-middleware-express": "^1.7.12",
     "graphql-resolvers": "^0.3.2",
     "knex": "^0.16.3",
+    "lodash": "^4.17.11",
     "postgraphile": "^4.4.0-alpha.0",
+    "stripe": "^6.25.1",
     "ts-node": "^8.0.2"
   },
   "devDependencies": {
@@ -35,6 +37,8 @@
     "@types/express-session": "^1.15.12",
     "@types/graphql-resolvers": "^0.2.0",
     "@types/knex": "^0.15.2",
+    "@types/lodash": "^4.14.121",
+    "@types/stripe": "^6.19.7",
     "dotenv-cli": "^1.4.0",
     "nodemon": "^1.18.9",
     "pgsh": "^0.4.0",
