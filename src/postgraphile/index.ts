@@ -99,7 +99,7 @@ export default async (
   databaseUrl: string,
   extraContext: object = {},
 ): Promise<Express.Application> => {
-  // The GraphQL endpoint
+  // actual graphql endpoint (/graphql)
   app.use(
     postgraphile(databaseUrl, REFLECT_SCHEMA, {
       ...COMMON_OPTIONS,
@@ -114,7 +114,7 @@ export default async (
     })
   );
 
-  // GraphiQL, a visual editor for queries
+  // playground, for development and testing
   const playground = expressPlayground({
     endpoint: '/graphql',
     subscriptionEndpoint: `ws://localhost:3000/graphql`, // FIXME: env var
@@ -128,4 +128,3 @@ export default async (
 
   return app;
 };
-
