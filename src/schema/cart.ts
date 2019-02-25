@@ -1,20 +1,46 @@
 import { PostGraphileContext } from '../custom-types';
-import { gql, makeExtendSchemaPlugin } from 'graphile-utils';
+import { gql, makeExtendSchemaPlugin, embed } from 'graphile-utils';
 import { skip, combineResolvers } from 'graphql-resolvers';
+import { sql, QueryBuilder } from 'graphile-build-pg';
 
 interface CartParams {
-  itemId: number,
-  quantity: number,
+  itemId: number
+  quantity: number
 }
 
+interface IdParam {
+  id: number
+}
+
+interface PostGraphileSubscriptionPayload {
+  event: string
+  subject: any
+}
+
+const NOT_LOGGED_IN_MSG = 'You must be logged in to interact with this resource.';
+const NO_SESSION_ID_MSG = 'No session ID is available on your request!';
+
+const cartTopic = ({ id }: IdParam) =>
+  `graphql:cart:${id}`;
+
 const typeDefs = gql`
+  type CartSubscriptionPayload {
+    event: String
+    cart: Cart
+  }
+
   extend type Query {
     sessionId: String
   }
+
   extend type Mutation {
     addToCart(itemId: Int!, quantity: Int!): Boolean!
     setCartQuantity(itemId: Int!, quantity: Int!): Boolean!
     resetCart: Boolean!
+  }
+
+  extend type Subscription {
+    cart(id: Int!): CartSubscriptionPayload @pgSubscription(topic: ${embed(cartTopic)})
   }
 `;
 
@@ -33,12 +59,8 @@ const ensureCart = ({ knex, user, sessionId }: PostGraphileContext) =>
  * to make sure we always have a valid user session.
  */
 const ensureUserSession = (_root: any, _params: any, { user, sessionId }: PostGraphileContext) => {
-  if (!user) {
-    return new Error('You must be logged in to interact with this resource.');
-  }
-  if (!sessionId) {
-    return new Error('No session ID is available on your request!');
-  }
+  if (!user) return new Error(NOT_LOGGED_IN_MSG);
+  if (!sessionId) return new Error(NO_SESSION_ID_MSG);
   return skip;
 };
 
@@ -62,7 +84,7 @@ const addToCart = async (
       (cart_id, item_id, quantity)
     select
       id, ?, ?
-    from cart
+    from app_public.cart
       where cart.session_id = ?
       and cart.user_id = ?
     on conflict
@@ -90,7 +112,7 @@ const setCartQuantity = async (
         (cart_id, item_id, quantity)
       select
         id, ?, ?
-      from cart
+      from app_public.cart
         where cart.session_id = ?
         and cart.user_id = ?
       on conflict
@@ -105,7 +127,7 @@ const setCartQuantity = async (
 
       where item_id = ? and cart_id = (
         select id
-        from cart
+        from app_public.cart
         where cart.session_id = ?
         and cart.user_id = ?
       )
@@ -155,6 +177,27 @@ const resolvers = {
       ensureUserSession,
       resetCart,
     ),
+  },
+  CartSubscriptionPayload: {
+    cart: async (
+      event: PostGraphileSubscriptionPayload,
+      _args: any,
+      _context: PostGraphileContext,
+      { graphile: { selectGraphQLResultFromTable } }: any,
+    ) => {
+      const rows = await selectGraphQLResultFromTable(
+        sql.fragment`app_public.cart`,
+        (tableAlias: any, sqlBuilder: QueryBuilder) => {
+          console.log('table alias:', tableAlias, 'get:', sqlBuilder.getTableAlias());
+          sqlBuilder.where(
+            sql.fragment`${sqlBuilder.getTableAlias()}.id = ${sql.value(
+              event.subject
+            )}`
+          );
+        }
+      );
+      return rows[0];
+    },
   },
 };
 
