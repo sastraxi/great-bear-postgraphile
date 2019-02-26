@@ -1,0 +1,5 @@
+At {{ order.created_at }}, you ordered something from Great Bear worth {{ order.amount }} cents.
+
+We delivered it at {{ order.delivered_at }}.
+
+Have a great day!

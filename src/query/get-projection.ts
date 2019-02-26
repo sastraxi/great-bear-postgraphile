@@ -1,11 +1,12 @@
 import Knex from 'knex';
 import { LatLon } from '../types';    
+import { fromGeoJSON } from '../util';
 
 export const getProjectionQuery = (knex: Knex) => (
   latlon: LatLon,
   distanceMetres: number,
   degreesFromNorthCCW: number
-): PromiseLike<string> =>
+): PromiseLike<LatLon> =>
   knex.raw(`
     select
       st_asgeojson(
@@ -16,6 +17,6 @@ export const getProjectionQuery = (knex: Knex) => (
         )
       ) as latlon
   `, [latlon.lon, latlon.lat, distanceMetres, degreesFromNorthCCW])
-    .then(({ rows }) => rows[0].latlon);
+    .then(({ rows }) => fromGeoJSON(rows[0].latlon));
 
 export default getProjectionQuery;

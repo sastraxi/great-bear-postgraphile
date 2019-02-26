@@ -1,13 +1,18 @@
 import Knex from 'knex';
 import { addListener } from '../postgraphile/get-pubsub';
+import Validate from './handler/1-validate';
+import Capture from './handler/2-capture';
+import Chef from './handler/3-chef';
+import Delivery from './handler/4-delivery';
 import { TableListenerSpec } from './util';
 
 type Factory = (knex: Knex) => TableListenerSpec;
 
-import Waiter from './handler/waiter';
-
 const SPEC_FACTORIES: Factory[] = [
-  Waiter,
+  Validate,
+  Capture,
+  Chef,
+  Delivery,
 ];
 
 const attachEventHandlers = (knex: Knex) =>

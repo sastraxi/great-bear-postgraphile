@@ -9,6 +9,8 @@ export interface TableListenerSpec {
 };
 
 export const SEC_TO_MS = 1000;
+export const KM_TO_M = 1000;
+export const HR_TO_SEC = 3600;
 
 export const tween = (a: number, b: number, pct: number): number =>
   (1 - pct) * a + pct * b;

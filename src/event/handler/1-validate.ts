@@ -1,9 +1,9 @@
-import Knex from 'knex';
-import Stripe from 'stripe';
 import Bluebird from 'bluebird';
+import Knex from 'knex';
 import _ from 'lodash';
-
+import Stripe from 'stripe';
 import { MessagePayload } from '../../postgraphile/get-pubsub';
+import sendEmailQuery from '../../query/send-email';
 import { SEC_TO_MS, TableListenerSpec } from '../util';
 
 const {
@@ -12,11 +12,9 @@ const {
   WAITER_VERIFICATION_RATE,
 } = process.env;
 
-import sendEmailQuery from '../../query/send-email';
-
 /**
  * after the charge has been authorized,
- * the waiter receives and validates the order
+ * a waiter receives and validates the order
  */
 export default (knex: Knex): TableListenerSpec => {
   const stripe = new Stripe(STRIPE_SECRET_KEY);

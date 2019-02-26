@@ -79,10 +79,11 @@ const checkout = async (
     await knex('app_public.cart_item').delete().where('cart_id', cartId);
     await Promise.all([
       sendEmail(user.id, 'submitted', {
-        order: { id: orderId },
-        amount,
-        currency: process.env.ISO_CURRENCY,
-        orderUrl: frontendUrl(`/order/${orderId}`),
+        order: {
+          id: orderId,
+          amount,
+        },
+        url: frontendUrl(`/order/${orderId}`),
       }),
       knex('app_public.cart').delete().where('id', cartId), // fk will nullify order.cart_id
       knex('app_public.order')

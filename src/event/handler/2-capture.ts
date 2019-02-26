@@ -1,15 +1,13 @@
 import Knex from 'knex';
-import Stripe from 'stripe';
 import _ from 'lodash';
-
+import Stripe from 'stripe';
 import { MessagePayload } from '../../postgraphile/get-pubsub';
-import { TableListenerSpec, amountPaidToPoints } from '../util';
+import sendEmailQuery from '../../query/send-email';
+import { amountPaidToPoints, TableListenerSpec } from '../util';
 
 const {
   STRIPE_SECRET_KEY,
 } = process.env;
-
-import sendEmailQuery from '../../query/send-email';
 
 /**
  * after the order has been verified, the authorized charge
@@ -21,7 +19,8 @@ export default (knex: Knex): TableListenerSpec => {
 
   return {
     qualifiedTable: 'app_public.order',
-    operation: 'insert',
+    operation: 'update',
+    columns: ['verified_at'],
     handler: async (msg: MessagePayload) => {
       const order = msg.new;
       const { stripe_charge: existingCharge } = order;

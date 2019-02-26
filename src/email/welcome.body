@@ -1,0 +1,3 @@
+Your email is {{ user.email }} and you are user #{{ user.id }}!
+
+Thanks for signing up.

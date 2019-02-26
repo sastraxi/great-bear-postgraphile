@@ -1,0 +1,5 @@
+Succesfully submitted #{{ order.id }}. You card has been pre-authorized for {{ currency }} cents.
+
+You can visit the following link to track it live:
+
+{{ url }}

@@ -1,0 +1,5 @@
+Unfortunately, the order you just placed was just cancelled by the fulfiller.
+
+The reason they gave is: {{ failure_message }}
+
+Your card has not been charged. We apologise for any inconvenience,
