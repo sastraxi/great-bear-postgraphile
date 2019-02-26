@@ -30,7 +30,7 @@ exports.up = knex =>
 
 exports.down = knex =>
   knex.raw(`
-    DROP TRIGGER subscription_cart___cart_item_insert;
-    DROP TRIGGER subscription_cart___cart_item_update;
-    DROP TRIGGER subscription_cart___cart_item_delete;
+    DROP TRIGGER subscription_cart___cart_item_insert ON app_public."cart_item";
+    DROP TRIGGER subscription_cart___cart_item_update ON app_public."cart_item";
+    DROP TRIGGER subscription_cart___cart_item_delete ON app_public."cart_item";
   `);
