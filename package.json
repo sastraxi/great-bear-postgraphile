@@ -1,9 +1,9 @@
 {
-  "name": "typescript-express-knex",
+  "name": "great-bear-postgraphile",
   "version": "0.0.1",
-  "description": "A template for backend programming with typescript, express, and knex.",
+  "description": "",
   "main": "src/server.ts",
-  "repository": "https://github.com/sastraxi/typescript-express-knex",
+  "repository": "https://github.com/sastraxi/great-bear-postgraphile",
   "author": "Cameron Gorrie <sastraxi@gmail.com>",
   "license": "MIT",
   "scripts": {
