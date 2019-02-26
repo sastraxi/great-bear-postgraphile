@@ -12,7 +12,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 /**
  * When an order is created, we need to authorize the charge
- * on the credit card, as well as make sure the amount is correct.
+ * on the payment card, as well as make sure the amount is correct.
  */
 const checkout = async (
   _root: any,
@@ -78,8 +78,8 @@ const checkout = async (
 
     await knex('app_public.cart_item').delete().where('cart_id', cartId);
     await Promise.all([
-      sendEmail(user.id, 'receipt', {
-        orderId,
+      sendEmail(user.id, 'submitted', {
+        order: { id: orderId },
         amount,
         currency: process.env.ISO_CURRENCY,
         orderUrl: frontendUrl(`/order/${orderId}`),

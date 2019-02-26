@@ -17,3 +17,6 @@ export const mix = (a: LatLon, b: LatLon, pct: number): LatLon => ({
   lat: tween(a.lat, b.lat, pct),
   lon: tween(a.lon, b.lon, pct),
 });
+
+export const amountPaidToPoints = (cents: number) =>
+  Math.ceil(cents / 100) * 10;

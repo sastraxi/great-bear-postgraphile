@@ -35,7 +35,7 @@ export default (knex: Knex): TableListenerSpec => {
 
       let failure_message;
       if (!existingCharge) {
-        failure_message = 'Your credit card was never charged for some reason...';
+        failure_message = 'Your paymend card was never charged for some reason...';
       } else if (Math.random() > +WAITER_VERIFICATION_RATE) {
         failure_message = 'This order was deemed invalid by random chance.';
       } else {
@@ -52,14 +52,10 @@ export default (knex: Knex): TableListenerSpec => {
               message: failure_message,
             },
           }),
-          sendEmail(
-            order.user_id,
-            'failure',
-            {
-              order: _.pick(order, ['id']),
-              failure_message,
-            },
-          ),
+          sendEmail(order.user_id, 'failure', {
+            order: _.pick(order, ['id']),
+            failure_message,
+          }),
           knex('app_public.order')
             .update({
               failed_at: knex.fn.now(),
