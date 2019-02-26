@@ -88,7 +88,7 @@ const checkout = async (
 
     return true;
   } catch (err) {
-    debug('checkout failed', debug);
+    debug('checkout failed', err);
     throw new Error('Checkout failed for an unknown reason. Try DEBUG=gbpg:*');
   }
 };
