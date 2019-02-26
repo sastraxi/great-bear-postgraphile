@@ -21,7 +21,6 @@ const subscriptionResolver = (
   _context: any,
   { graphile: { selectGraphQLResultFromTable } }: any,
 ) => {
-  console.log('sql is', sql);
   const [schema, table] = opts.qualifiedTable.split('.');
   const rows = await selectGraphQLResultFromTable(
     sql.identifier(schema, table),
