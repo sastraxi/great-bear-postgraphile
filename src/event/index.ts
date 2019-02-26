@@ -5,6 +5,7 @@ import { TableListenerSpec } from './util';
 type Factory = (knex: Knex) => TableListenerSpec;
 
 import Waiter from './handler/waiter';
+
 const SPEC_FACTORIES: Factory[] = [
   Waiter,
 ];

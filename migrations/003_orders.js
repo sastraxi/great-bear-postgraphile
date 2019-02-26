@@ -2,7 +2,7 @@ exports.up = knex =>
   knex.raw(`
     create table app_public."order" (
       id serial primary key,
-      user_id int null
+      user_id int not null
         references app_public."user" (id)
           on delete restrict
           on update cascade,
@@ -12,22 +12,22 @@ exports.up = knex =>
       /* ... no authorized_at because it would be equal to created_at */
       /* ... no cart_id because it'd just be destroyed in the migration */
 
-      stripe_charge jsonb default null,
+      stripe_charge jsonb not null,
       amount int not null
         check (amount > 0),
     
-      current_latlon geometry(point, 4326) not null,
+      current_latlon geometry(point, 4326),
       destination_latlon geometry(point, 4326) not null,
     
       created_at timestamptz not null default now(),
       modified_at timestamptz not null default now(),
-      verified_at timestamptz default null,
+      verified_at timestamptz not null,
       captured_at timestamptz default null,
       cooked_at timestamptz default null,
       delivered_at timestamptz default null,
 
       error jsonb default null,
-      failed_at timestamptz default null,      
+      failed_at timestamptz default null,
     
       check (
         delivered_at is null or

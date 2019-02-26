@@ -7,6 +7,7 @@ import { MessagePayload } from '../../postgraphile/get-pubsub';
 import { SEC_TO_MS, TableListenerSpec } from '../util';
 
 const {
+  STRIPE_SECRET_KEY,
   WAITER_PREP_SEC,
   WAITER_VERIFICATION_RATE,
 } = process.env;
@@ -18,7 +19,7 @@ import sendEmailQuery from '../query/send-email';
  * the waiter receives and validates the order
  */
 export default (knex: Knex): TableListenerSpec => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = new Stripe(STRIPE_SECRET_KEY);
   const sendEmail = sendEmailQuery(knex);
 
   return {
@@ -27,6 +28,7 @@ export default (knex: Knex): TableListenerSpec => {
     handler: async (msg: MessagePayload) => {
       const order = msg.new;
       const existingCharge = order.stripe_charge;
+      console.log('order', order);
 
       // the waiter takes their time getting ready...
       await Bluebird.delay(SEC_TO_MS * +WAITER_PREP_SEC);
@@ -58,7 +60,7 @@ export default (knex: Knex): TableListenerSpec => {
               failure_message,
             },
           ),
-          knex('order')
+          knex('app_public.order')
             .update({
               failed_at: knex.fn.now(),
               error: JSON.stringify({ message: failure_message }),
@@ -69,7 +71,7 @@ export default (knex: Knex): TableListenerSpec => {
       }
 
       // the order is valid.
-      await knex('order')
+      await knex('app_public.order')
         .update({ verified_at: knex.fn.now() })
         .where({ id: order.id });
     },

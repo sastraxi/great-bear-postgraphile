@@ -23,15 +23,10 @@ const plugin: PostGraphilePlugin = {
   ["postgraphile:options"](incomingOptions) {
     const { graphileBuildOptions: { pubsub: recvPubSub } } = incomingOptions;
     pubsub = recvPubSub;
-    console.log('got pubsub', pubsub);
+    debug('got pubsub', pubsub);
     return incomingOptions;
   },
 };
-
-// TODO: build an app_public.table_subscription() function
-// - notifies "tbl:<operation>:schema.name" { old, new, uuid, timestamp }
-// - can run on execute; TG_OP TG_TABLE_SCHEMA TG_TABLE_NAME NEW OLD
-// - see how hasura builds uuids
 
 export const addListener = (
   qualifiedTable: string,
@@ -45,8 +40,10 @@ export const addListener = (
     debug(`topic length over 63: "${topic}"`);
   }
 
+  debug(`subscribing to topic: ${topic}`);
   return pubsub.subscribe(topic, (msg: MessagePayload) => {
-    if (columns !== "any") {
+    debug(`${topic} received`, msg);
+    if (operation === 'update' && columns !== 'any') {
       const { old, new: newRecord } = msg;        
       if (!columns.some(col => newRecord[col] !== old[col])) {
         debug(`${operation}(${qualifiedTable}): no modified columns: ${columns}`);
