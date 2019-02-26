@@ -86,11 +86,6 @@ const checkout = async (
         url: frontendUrl(`/order/${orderId}`),
       }),
       knex('app_public.cart').delete().where('id', cartId), // fk will nullify order.cart_id
-      knex('app_public.order')
-        .update({
-          authorized_at: knex.fn.now(),
-        })
-        .where('id', orderId),
     ]);
 
     return true;

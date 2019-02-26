@@ -21,7 +21,7 @@ const allUserOrdersTopic = async (_args: any, context: PostGraphileContext) => {
 };
 
 const typeDefs = gql`
-  type LatLon {
+  input LatLon {
     lat: Float!
     lon: Float!
   }
@@ -45,7 +45,7 @@ const typeDefs = gql`
   }
 
   extend type Subscription {
-    order: OrderSubscriptionPayload @pgSubscription(topic: ${embed(orderTopic)})
+    order(id: Int!): OrderSubscriptionPayload @pgSubscription(topic: ${embed(orderTopic)})
     orders: OrdersSubscriptionPayload @pgSubscription(topic: ${embed(allUserOrdersTopic)})
   }
 `;

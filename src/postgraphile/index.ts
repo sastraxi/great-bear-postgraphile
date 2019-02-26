@@ -18,6 +18,7 @@ import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
 import session from '../session';
 import CartSchemaPlugin from './cart';
+import OrderSchemaPlugin from './order';
 import GetPubSubPlugin from './get-pubsub';
 
 const REFLECT_SCHEMA = 'app_public';
@@ -27,6 +28,7 @@ const REFLECT_SCHEMA = 'app_public';
  */
 const EXTEND_SCHEMA_PLUGINS: Plugin[] = [
   CartSchemaPlugin,
+  OrderSchemaPlugin,
 ];
 
 /**
