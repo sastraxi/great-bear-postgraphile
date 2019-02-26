@@ -24,7 +24,7 @@ const subscriptionResolver = (
   const [schema, table] = opts.qualifiedTable.split('.');
   const rows = await selectGraphQLResultFromTable(
     sql.identifier(schema, table),
-    (tableAlias: any, sqlBuilder: QueryBuilder) => {
+    (_tableAlias: any, sqlBuilder: QueryBuilder) => {
       sqlBuilder.where(
         sql.fragment`${sqlBuilder.getTableAlias()}.${sql.identifier(opts.column)} = ${sql.value(event.subject)}`
       );

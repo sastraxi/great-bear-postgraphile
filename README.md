@@ -22,7 +22,3 @@
 
 * subscriptions seem to notify a TON -- once the first time, twice the second, three times the third...
   it's a very obvious pattern but not sure what causes it
-
-* add computed columns:
-  * app_public.order_destination_json (geojson)
-  * app_public.order_current_json (geojson
