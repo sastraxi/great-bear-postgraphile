@@ -16,10 +16,10 @@ const subscriptionResolver = (
   { graphile: { selectGraphQLResultFromTable } }: any,
 ) => {
   const rows = await selectGraphQLResultFromTable(
-    sql.fragment`app_public.cart`,
+    sql.fragment`app_public.${tableName}`,
     (tableAlias: any, sqlBuilder: QueryBuilder) => {
       sqlBuilder.where(
-        sql.fragment`${tableAlias}.id = ${sql.value(event.subject)}`
+        sql.fragment`${tableAlias}.${columnName} = ${sql.value(event.subject)}`
       );
     }
   );
