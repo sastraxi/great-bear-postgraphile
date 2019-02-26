@@ -21,11 +21,13 @@ const subscriptionResolver = (
   _context: any,
   { graphile: { selectGraphQLResultFromTable } }: any,
 ) => {
+  console.log('sql is', sql);
+  const [schema, table] = opts.qualifiedTable.split('.');
   const rows = await selectGraphQLResultFromTable(
-    sql.fragment`${opts.qualifiedTable}`,
+    sql.identifier(schema, table),
     (tableAlias: any, sqlBuilder: QueryBuilder) => {
       sqlBuilder.where(
-        sql.fragment`${tableAlias}.${opts.column} = ${sql.value(event.subject)}`
+        sql.fragment`${sqlBuilder.getTableAlias()}.${sql.identifier(opts.column)} = ${sql.value(event.subject)}`
       );
     }
   );

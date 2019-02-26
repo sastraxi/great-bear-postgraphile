@@ -2,7 +2,7 @@ import 'dotenv/config';
 import './types';
 
 import express from 'express';
-import bodyParser from 'body-parser';
+import bodyParser, { json } from 'body-parser';
 import cors from 'cors';
 
 import knex, { databaseUrl } from './knex';
@@ -34,6 +34,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 attachPostGraphile(app, databaseUrl, { knex }).then(() => {
   attachEventHandlers(knex);
+
+  app.get('/', (req, res) => res.status(200).json({ message: 'OK' }));
 
   const port = process.env.PORT || 3000;
   app.listen(port , () =>

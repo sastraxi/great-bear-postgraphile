@@ -41,7 +41,7 @@ const typeDefs = gql`
   }
 
   extend type Subscription {
-     currentCart: CartSubscriptionPayload @pgSubscription(topic: ${embed(currentCartTopic)})
+    currentCart: CartSubscriptionPayload @pgSubscription(topic: ${embed(currentCartTopic)})
   }
 `;
 
