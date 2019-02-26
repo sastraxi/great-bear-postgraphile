@@ -10,15 +10,6 @@ export interface TableListenerSpec {
 
 export const SEC_TO_MS = 1000;
 
-export const fromCoord = (geoJSON: string): LatLon => {
-  if (!geoJSON) return null;
-  const { coordinates } = JSON.parse(geoJSON);
-  return {
-    lat: coordinates[1],
-    lon: coordinates[0],
-  };
-};
-
 export const tween = (a: number, b: number, pct: number): number =>
   (1 - pct) * a + pct * b;
 

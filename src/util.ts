@@ -1,3 +1,5 @@
+import { LatLon } from './types';
+
 /**
  * A valid password has at least 8 characters and contains letters and numbers.
  * This is required for PCI compliance through Stripe.
@@ -12,3 +14,12 @@ export const isValidPassword = (password: string) => {
 
 export const frontendUrl = (path: string) =>
   `${process.env.FRONTEND_URL}${path}`;
+
+export const fromGeoJSON = (geoJSON: string): LatLon => {
+  if (!geoJSON) return null;
+  const { coordinates } = JSON.parse(geoJSON);
+  return {
+    lat: coordinates[1],
+    lon: coordinates[0],
+  };
+};
