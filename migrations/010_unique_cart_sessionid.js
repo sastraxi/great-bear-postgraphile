@@ -21,6 +21,6 @@ exports.up = knex =>
 
 exports.down = knex =>
   knex.raw(`
-  alter table app_public."cart"
-    drop constraint cart_session_id_key;
+    alter table app_public."cart"
+      drop constraint cart_session_id_key;
   `);
