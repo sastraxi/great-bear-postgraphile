@@ -70,7 +70,7 @@ const resolvers = (sql: any) => ({
   OrdersSubscriptionPayload: {
     orders: subscriptionResolver(sql, {
       qualifiedTable: 'app_public.order',
-      column: 'id',
+      column: 'user_id',
       multi: true,
     }),
   },
