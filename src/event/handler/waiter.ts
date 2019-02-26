@@ -12,7 +12,7 @@ const {
   WAITER_VERIFICATION_RATE,
 } = process.env;
 
-import sendEmailQuery from '../query/send-email';
+import sendEmailQuery from '../../query/send-email';
 
 /**
  * after the charge has been authorized,

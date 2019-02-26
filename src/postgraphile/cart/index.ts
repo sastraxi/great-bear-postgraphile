@@ -67,7 +67,11 @@ const resolvers = (sql: any) => ({
     ),
   },
   CartSubscriptionPayload: {
-    cart: subscriptionResolver(sql, 'app_public.cart', 'id'),
+    cart: subscriptionResolver(sql, {
+      qualifiedTable: 'app_public.cart',
+      column: 'id',
+      multi: false,
+    }),
   },
 });
 

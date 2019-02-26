@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { QueryBuilder } from 'graphile-build-pg';
 
 interface PostGraphileSubscriptionPayload {
@@ -5,10 +6,15 @@ interface PostGraphileSubscriptionPayload {
   subject: any
 }
 
+export interface SubscriptionResolverOptions {
+  qualifiedTable: string,
+  column: string,
+  multi: boolean
+}
+
 const subscriptionResolver = (
   sql: any,
-  tableName: string,
-  columnName: string,
+  opts: SubscriptionResolverOptions,
 ) => async (
   event: PostGraphileSubscriptionPayload,
   _args: any,
@@ -16,14 +22,14 @@ const subscriptionResolver = (
   { graphile: { selectGraphQLResultFromTable } }: any,
 ) => {
   const rows = await selectGraphQLResultFromTable(
-    sql.fragment`app_public.${tableName}`,
+    sql.fragment`${opts.qualifiedTable}`,
     (tableAlias: any, sqlBuilder: QueryBuilder) => {
       sqlBuilder.where(
-        sql.fragment`${tableAlias}.${columnName} = ${sql.value(event.subject)}`
+        sql.fragment`${tableAlias}.${opts.column} = ${sql.value(event.subject)}`
       );
     }
   );
-  return rows[0];
+  return opts.multi ? rows : rows[0];
 };
 
 export default subscriptionResolver;
