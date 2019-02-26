@@ -9,3 +9,6 @@ export const isValidPassword = (password: string) => {
   if (!/[a-z]/i.test(password)) return false;
   return true;
 };
+
+export const frontendUrl = (path: string) =>
+  `${process.env.FRONTEND_URL}${path}`;

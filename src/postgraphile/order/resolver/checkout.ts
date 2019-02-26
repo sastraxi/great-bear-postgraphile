@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { frontendUrl } from '../../../util';
 import { PostGraphileContext } from '../../../types';
 import { CheckoutParams } from '../types';
 import sendEmailQuery from '../../../query/send-email';
@@ -77,10 +78,15 @@ const checkout = async (
 
     await knex('app_public.cart_item').delete().where('cart_id', cartId);
     await Promise.all([
+      sendEmail(user.id, 'receipt', {
+        orderId,
+        amount,
+        currency: process.env.ISO_CURRENCY,
+        orderUrl: frontendUrl(`/order/${orderId}`),
+      }),
       knex('app_public.cart').delete().where('id', cartId), // fk will nullify order.cart_id
       knex('app_public.order')
         .update({
-          stripe_charge: charge,
           authorized_at: knex.fn.now(),
         })
         .where('id', orderId),
