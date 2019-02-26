@@ -45,7 +45,7 @@ const typeDefs = gql`
   }
 
   extend type Subscription {
-    order(id: Int!): OrderSubscriptionPayload @pgSubscription(topic: ${embed(orderTopic)})
+    orderById(id: Int!): OrderSubscriptionPayload @pgSubscription(topic: ${embed(orderTopic)})
     orders: OrdersSubscriptionPayload @pgSubscription(topic: ${embed(allUserOrdersTopic)})
   }
 `;
@@ -68,7 +68,7 @@ const resolvers = (sql: any) => ({
     }),
   },
   OrdersSubscriptionPayload: {
-    order: subscriptionResolver(sql, {
+    orders: subscriptionResolver(sql, {
       qualifiedTable: 'app_public.order',
       column: 'id',
       multi: true,

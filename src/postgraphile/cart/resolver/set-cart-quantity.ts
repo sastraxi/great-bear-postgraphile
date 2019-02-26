@@ -31,8 +31,7 @@ const setCartQuantity = async (
   } else {
     // silently treats negatives as 0 (deletion)
     return knex.raw(`
-      delete from cart_item
-
+      delete from app_public.cart_item
       where item_id = ? and cart_id = (
         select id
         from app_public.cart

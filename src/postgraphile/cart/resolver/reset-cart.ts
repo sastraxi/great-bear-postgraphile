@@ -13,7 +13,7 @@ const resetCart = async(
   const { sessionId, user, knex } = context;
   await ensureCart(context);
   return knex.raw(`
-    delete from cart_item
+    delete from app_public.cart_item
     where cart_id = (
       select id
       from cart

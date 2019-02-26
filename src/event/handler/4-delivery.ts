@@ -2,12 +2,15 @@ import Bluebird from 'bluebird';
 import Knex from 'knex';
 import _ from 'lodash';
 import moment from 'moment';
+import createDebugger from 'debug';
 import { MessagePayload } from '../../postgraphile/get-pubsub';
 import getOrderLocationsQuery from '../../query/get-order-locations';
 import getProjectionQuery from '../../query/get-projection';
 import sendEmailQuery from '../../query/send-email';
 import setOrderLocationQuery from '../../query/set-order-location';
 import { HR_TO_SEC, KM_TO_M, mix, SEC_TO_MS, TableListenerSpec } from '../util';
+
+const debug = createDebugger('gbpg:delivery');
 
 const {
   DRIVER_DISTANCE_KM,
@@ -68,10 +71,12 @@ export default (knex: Knex): TableListenerSpec => {
             delivered_at,
           },
         }),
-        knex('order')
+        knex('app_public.order')
           .update({ delivered_at })
           .where({ id: order.id }),
       ]);
+
+      debug(`delivered order #${order.id}`)
     },
   };
 };

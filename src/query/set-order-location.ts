@@ -6,9 +6,9 @@ const setOrderLocationQuery = (knex: Knex) => (
   latlon: LatLon,
 ): PromiseLike<void> =>
   knex.raw(`
-    update "order"
+    update app_public."order"
     set
-      latlon = st_setsrid(st_makepoint(?, ?), 4326)
+      current_latlon = st_setsrid(st_makepoint(?, ?), 4326)
     where id = ?
   `, [latlon.lon, latlon.lat, orderId]);
 

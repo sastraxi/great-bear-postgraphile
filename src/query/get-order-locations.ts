@@ -15,7 +15,7 @@ export const getOrderLocationsQuery = (knex: Knex) =>
       select
         st_asgeojson(current_latlon) as current,
         st_asgeojson(destination_latlon) as destination
-      from "order"
+      from app_public."order"
       where id = ?
     `, [orderId])
     .then(({ rows }) => rows[0])

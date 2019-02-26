@@ -1,7 +1,10 @@
 import Bluebird from 'bluebird';
 import Knex from 'knex';
+import createDebugger from 'debug';
 import { MessagePayload } from '../../postgraphile/get-pubsub';
 import { SEC_TO_MS, TableListenerSpec } from '../util';
+
+const debug = createDebugger('gbpg:chef');
 
 const {
   CHEF_PREP_SEC,
@@ -22,8 +25,10 @@ export default (knex: Knex): TableListenerSpec => ({
     await Bluebird.delay(SEC_TO_MS * +CHEF_PREP_SEC);
 
     // the chef cooked the order.
-    await knex('order')
+    await knex('app_public.order')
       .update({ cooked_at: knex.fn.now() })
       .where({ id: order.id });
+
+    debug(`cooked order #${order.id}`);
   },
 });

@@ -24,7 +24,7 @@ export default (knex: Knex) =>
       });
     }
 
-    const existingUserId = await knex('user')
+    const existingUserId = await knex('app_public.user')
       .whereRaw('lower(email) = ?', [email.toLowerCase().trim()])
       .first('id')
       .then(row => row && row.id);
@@ -35,7 +35,8 @@ export default (knex: Knex) =>
       });
     }
 
-    const id = await knex('user')
+    // FIXME: need to insert some of this data into app_private.user
+    const id = await knex('app_public.user')
       .insert({
         email,
         hash_password: await bcrypt.hash(password, BCRYPT_ROUNDS),

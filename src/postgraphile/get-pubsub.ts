@@ -23,7 +23,7 @@ const plugin: PostGraphilePlugin = {
   ["postgraphile:options"](incomingOptions) {
     const { graphileBuildOptions: { pubsub: recvPubSub } } = incomingOptions;
     pubsub = recvPubSub;
-    debug('got pubsub', pubsub);
+    debug(pubsub);
     return incomingOptions;
   },
 };

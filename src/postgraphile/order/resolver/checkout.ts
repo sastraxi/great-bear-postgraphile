@@ -1,11 +1,11 @@
-import Stripe from 'stripe';
-import { frontendUrl } from '../../../util';
-import { PostGraphileContext } from '../../../types';
-import { CheckoutParams } from '../types';
-import sendEmailQuery from '../../../query/send-email';
 import createDebugger from 'debug';
-
+import Stripe from 'stripe';
+import sendEmailQuery from '../../../query/send-email';
+import toGeometryQuery from '../../../query/to-geometry';
+import { PostGraphileContext } from '../../../types';
+import { frontendUrl } from '../../../util';
 import getCartId from '../get-cart-id';
+import { CheckoutParams } from '../types';
 
 const debug = createDebugger('gbpg:checkout');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -18,9 +18,10 @@ const checkout = async (
   _root: any,
   { deliveryLocation, stripeToken, amount }: CheckoutParams,
   context: PostGraphileContext,
-) => {
+): Promise<number> => {
   const { user, knex } = context;
   const sendEmail = sendEmailQuery(knex);
+  const toGeometry = toGeometryQuery(knex);
 
   // validate our cart
   const cartId = await getCartId(context);
@@ -58,10 +59,9 @@ const checkout = async (
     const orderId = await knex('app_public.order')
       .insert({
         user_id: user!.id,
-        cart_id: cartId,
         stripe_charge: charge,
         amount,
-        destination_latlon: deliveryLocation,
+        destination_latlon: toGeometry(deliveryLocation),
       })
       .returning('id')
       .then(rows => rows && rows[0]);
@@ -72,7 +72,7 @@ const checkout = async (
         ?,
         item_id,
         quantity
-      from cart_item
+      from app_public.cart_item
       where cart_id = ?
     `, [orderId, cartId])
 
@@ -88,10 +88,11 @@ const checkout = async (
       knex('app_public.cart').delete().where('id', cartId), // fk will nullify order.cart_id
     ]);
 
-    return true;
+    debug(`created order #${orderId}`);
+    return orderId;
   } catch (err) {
     debug('checkout failed', err);
-    throw new Error('Checkout failed for an unknown reason. Try DEBUG=gbpg:*');
+    throw new Error('Checkout failed for an unknown reason. Try DEBUG=gbpg:checkout');
   }
 };
 

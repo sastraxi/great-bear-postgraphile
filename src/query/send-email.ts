@@ -6,10 +6,10 @@ const sendEmailQuery = (knex: Knex) => (
   props: Object,
 ): PromiseLike<number> =>
   knex.raw(`
-    insert into email (user_id, email, template, props)
+    insert into app_private.email (user_id, recipient, template, props)
     select
       "user".id, "user".email, ?, ?
-    from "user"
+    from app_public."user"
     where "user".id = ?
   `, [template, JSON.stringify(props), userId]);
 
