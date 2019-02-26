@@ -35,21 +35,30 @@ const EXTEND_SCHEMA_PLUGINS: Plugin[] = [
  * Options common to schema-mode and middleware-mode.
  */
 const COMMON_OPTIONS: PostGraphileOptions = {
+
   appendPlugins: [
     // allOrders -> orders, cartItemsByCartItemId -> cartItems
     PgSimplifyInflectorPlugin,
     ...EXTEND_SCHEMA_PLUGINS,
   ],
+
   // adds a *List that reduces boilerplate when we don't need (relay) pagination
   simpleCollections: 'both',
-  subscriptions: true,
+
+  // parse JSON columns so consumers don't have to
+  dynamicJson: true,
+
   pluginHook: makePluginHook([
+    // necessary for subscriptions to work.
     PubSubPlugin,
     // captures the pubsub instance used in the previous plugin
     // and makes it available anywhere else in the program.
     // yeah, it's pretty much a global variable... wanna fight about it?
     GetPubSubPlugin,
   ]),
+
+  // enable the websocket server
+  subscriptions: true,
   websocketMiddlewares: [
     // the websocket server is separate from the main express server; any
     // middleware we want to run for Subscriptions has to be listed here as well.
