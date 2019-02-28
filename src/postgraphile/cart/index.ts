@@ -70,6 +70,7 @@ const resolvers = (sql: any) => ({
     cart: subscriptionResolver(sql, {
       qualifiedTable: 'app_public.cart',
       column: 'id',
+      payloadColumn: 'cart_id', // events come from cart_item
       multi: false,
     }),
   },

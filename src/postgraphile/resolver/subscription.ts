@@ -1,5 +1,8 @@
 import _ from 'lodash';
 import { QueryBuilder } from 'graphile-build-pg';
+import createDebugger from 'debug';
+
+const debug = createDebugger('gbpg:subscribe');
 
 type StringMap = {[key: string]: string};
 type PostGraphileSubscriptionPayload = StringMap & {
@@ -8,6 +11,7 @@ type PostGraphileSubscriptionPayload = StringMap & {
 
 export interface SubscriptionResolverOptions {
   qualifiedTable: string,
+  payloadColumn?: string,
   column: string,
   multi: boolean
 }
@@ -22,7 +26,8 @@ const subscriptionResolver = (
   { graphile: { selectGraphQLResultFromTable } }: any,
 ) => {
   const [schema, table] = opts.qualifiedTable.split('.');
-  const columnValue = event[opts.column];
+  const columnValue = event[opts.payloadColumn || opts.column];
+  debug('event', event, 'opts', opts);
 
   const rows = await selectGraphQLResultFromTable(
     sql.identifier(schema, table),
