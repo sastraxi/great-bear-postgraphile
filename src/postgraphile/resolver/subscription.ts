@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import { QueryBuilder } from 'graphile-build-pg';
 
-interface PostGraphileSubscriptionPayload {
+type StringMap = {[key: string]: string};
+type PostGraphileSubscriptionPayload = StringMap & {
   event: string
-  subject: any
-}
+};
 
 export interface SubscriptionResolverOptions {
   qualifiedTable: string,
@@ -22,11 +22,13 @@ const subscriptionResolver = (
   { graphile: { selectGraphQLResultFromTable } }: any,
 ) => {
   const [schema, table] = opts.qualifiedTable.split('.');
+  const columnValue = event[opts.column];
+
   const rows = await selectGraphQLResultFromTable(
     sql.identifier(schema, table),
     (_tableAlias: any, sqlBuilder: QueryBuilder) => {
       sqlBuilder.where(
-        sql.fragment`${sqlBuilder.getTableAlias()}.${sql.identifier(opts.column)} = ${sql.value(event.subject)}`
+        sql.fragment`${sqlBuilder.getTableAlias()}.${sql.identifier(opts.column)} = ${sql.value(columnValue)}`
       );
     }
   );
