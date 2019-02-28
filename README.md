@@ -10,6 +10,7 @@
     ```
     REACT_APP_GRAPHQL_VARIANT=postgraphile
     REACT_APP_GRAPHQL_URL=http://localhost:4000/graphql # by default
+    REACT_APP_SUBSCRIPTION_URL=ws://localhost:4000/graphql # by default
     ```
 6. Run the frontend with `yarn start` as well.
 7. Navigate to http://localhost:3000 (by default).
