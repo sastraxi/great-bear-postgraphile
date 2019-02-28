@@ -11,10 +11,6 @@ const signup = async (
   { req, knex }: PostGraphileContext,
 ): Promise<User> => {
 
-  if (!email || !password) {
-    throw new Error('Expected "email" and "password" in the request body');
-  }
-
   if (!isValidPassword(password)) {
     throw new Error(
       'Passwords must be at least 8 characters in length ' +
