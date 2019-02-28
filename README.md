@@ -9,10 +9,10 @@
 5. Clone `https://github.com/sastraxi/great-bear-frontend` and follow its setup instructions. Put the following in your `.env`:
     ```
     REACT_APP_GRAPHQL_VARIANT=postgraphile
-    REACT_APP_GRAPHQL_URL=http://localhost:3000/graphql # by default
+    REACT_APP_GRAPHQL_URL=http://localhost:4000/graphql # by default
     ```
 6. Run the frontend with `yarn start` as well.
-7. Navigate to http://localhost:4000 (by default).
+7. Navigate to http://localhost:3000 (by default).
 
 ### TODO
 
