@@ -1,24 +1,26 @@
+import Express from 'express';
 import Knex from 'knex';
 
 export interface LatLon {
-  lat: number,
-  lon: number,
+  lat: number
+  lon: number
 }
 
 export interface User {
-  id: number,
-  isAdmin: boolean,
+  id: number
+  isAdmin: boolean
 }
 
 export interface Session {
-  id: string,
+  id: string
 }
 
 export interface PostGraphileContext {
-  ip: string,
-  user?: User,
-  sessionId?: string,
-  knex: Knex,
+  ip: string
+  user?: User
+  sessionId?: string
+  knex: Knex
+  req: Express.Request
 }
 
 export interface IdParam {
@@ -27,8 +29,8 @@ export interface IdParam {
 
 declare module 'http' {
   export interface IncomingMessage {
-    user?: User,
-    session: Session,
-    ip: string, // from Express.Request
+    user?: User
+    session: Session
+    ip: string // from Express.Request
   }
 }

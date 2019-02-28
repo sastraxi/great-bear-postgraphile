@@ -35,15 +35,22 @@ export default (knex: Knex) =>
       });
     }
 
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
     // FIXME: need to insert some of this data into app_private.user
     const id = await knex('app_public.user')
       .insert({
         email,
-        hash_password: await bcrypt.hash(password, BCRYPT_ROUNDS),
-        is_admin: false,
       })
       .returning('id')
       .then(rows => rows && rows[0]);
+
+    await knex('app_private.user')
+      .insert({
+        user_id: id,
+        hash_password: hashedPassword,
+        is_admin: false,
+      });
 
     return req.login({ id, email }, (err) => {
       if (err) return res.status(500).send(err);

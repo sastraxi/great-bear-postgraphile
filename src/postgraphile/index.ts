@@ -9,6 +9,7 @@ import {
   makePluginHook,
 } from 'postgraphile';
 import passport from 'passport';
+import createDebugger from 'debug';
 
 // FIXME: why does ts complain when importing directly from postgraphile?
 import { PostGraphileOptions } from 'postgraphile/build/interfaces';
@@ -19,7 +20,10 @@ import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import session from '../session';
 import CartSchemaPlugin from './cart';
 import OrderSchemaPlugin from './order';
+import AuthSchemaPlugin from './auth';
 import GetPubSubPlugin from './get-pubsub';
+
+const authDebug = createDebugger('gbpg:auth');
 
 const REFLECT_SCHEMA = 'app_public';
 
@@ -29,6 +33,7 @@ const REFLECT_SCHEMA = 'app_public';
 const EXTEND_SCHEMA_PLUGINS: Plugin[] = [
   CartSchemaPlugin,
   OrderSchemaPlugin,
+  AuthSchemaPlugin,
 ];
 
 /**
@@ -74,18 +79,21 @@ const COMMON_OPTIONS: PostGraphileOptions = {
  * Take a look at the migrations/ directory for how we read
  * these settings from queries and stored functions.
  */
-export const pgSettingsFromRequest = (req: http.IncomingMessage) => ({
-  role: req.user && req.user.isAdmin ? 'app_admin' : 'app_user',
-  /*
-  ...(req.user
-    ? { 'jwt.claims.user_id': String(req.user.id) }
-    : {}),
-  */
-  'jwt.claims.user_id': '1',
-  ...(req.session
-    ? { 'jwt.claims.session_id': req.session.id }
-    : {}),
-});
+export const pgSettingsFromRequest = (req: http.IncomingMessage) => {
+  authDebug('sesion and user', req.session, req.user);
+  const settings = {
+    role: req.user && req.user.isAdmin ? 'app_admin' : 'app_user',
+    ...(req.user
+      ? { 'jwt.claims.user_id': String(req.user.id) }
+      : {}),
+    // 'jwt.claims.user_id': '1',
+    ...(req.session
+      ? { 'jwt.claims.session_id': req.session.id }
+      : {}),
+  };
+  authDebug('settings from request', settings);
+  return settings;
+};
 
 /**
  * For any schemas that we extend, we can also access
@@ -94,9 +102,10 @@ export const pgSettingsFromRequest = (req: http.IncomingMessage) => ({
  */
 export const contextFromRequest = (req: http.IncomingMessage) => ({
   ip: req.ip,
-  // user: req.user,
-  user: { id: 1 },
+  user: req.user,
+  // user: { id: 1 },
   sessionId: req.session && req.session.id,
+  req,
 });
 
 /**
