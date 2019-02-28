@@ -6,6 +6,7 @@ const logout = async (
   { req }: PostGraphileContext,
 ): Promise<boolean> => {
   req.logout();
+  req.session.destroy(() => {});
   return true;
 };
 

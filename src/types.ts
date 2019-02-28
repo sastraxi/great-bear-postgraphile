@@ -13,6 +13,7 @@ export interface User {
 
 export interface Session {
   id: string
+  destroy(callback: (err: any) => void): void;
 }
 
 export interface PostGraphileContext {
