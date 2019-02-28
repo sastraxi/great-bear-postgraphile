@@ -3,7 +3,6 @@ import Express from 'express';
 import passport from 'passport';
 
 import applyLocal from './local';
-import logout from './logout';
 
 import createDebugger from 'debug';
 const debug = createDebugger('gbpg:auth');
@@ -40,8 +39,6 @@ const applyPassport = (app: Express.Application, knex: Knex) => {
   });
 
   applyLocal(app, knex);
-
-  app.post('/auth/logout', logout);
 };
 
 export default applyPassport;

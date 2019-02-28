@@ -8,12 +8,10 @@ import createDebugger from 'debug';
 const debug = createDebugger('gbpg:auth');
 
 import { Strategy as LocalStrategy } from 'passport-local';
-import login from './login';
-import signup from './signup';
 
 const ERR_USER_OR_PASSWORD_MISMATCH = 'user-or-password-mismatch';
 
-export default (app: Express.Application, knex: Knex) => {
+export default (app: Express.Application, knex: Knex) =>
   passport.use(new LocalStrategy(
     {
       usernameField: 'email',
@@ -41,7 +39,3 @@ export default (app: Express.Application, knex: Knex) => {
       return done(null, _.pick(user, ['id', 'email', 'isAdmin']));
     },
   ));
-
-  app.post('/auth/login', login);
-  app.post('/auth/signup', signup(knex));
-};
