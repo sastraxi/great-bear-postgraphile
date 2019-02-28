@@ -58,7 +58,7 @@ export default (knex: Knex): TableListenerSpec => {
         ])
       }
       await Promise.all([
-        setOrderLocation(order.id, initialCoord),
+        setOrderLocation(order.id, targetCoord),
         Bluebird.delay(SEC_TO_MS * +DRIVER_DROP_PACKAGE_SEC),
       ]);
     
