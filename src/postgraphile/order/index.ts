@@ -7,8 +7,28 @@ import ensureUserSession from '../resolver/ensure-user-session';
 
 import checkout from './resolver/checkout';
 
-const orderTopic = ({ id }: IdParam) =>
-  `graphql:order:${id}`;
+const orderTopic = async ({ id }: IdParam, { knex, user }: PostGraphileContext) => {
+  if (!user) {
+    throw new Error('You must be logged in.');
+  }
+
+  const orderUserId = await knex('app_public.cart')
+    .where('id', id)
+    .first('user_id')
+    .then(o => o && o.user_id);
+
+  if (orderUserId !== user.id) {
+    // We must be responsible for checking whether or not the given order ID
+    // belongs to the user that's logged in. Even though PostGraphile gives
+    // us data security for free, we'd still be leaking *when* something changes
+    // for data the user isn't privy to. Take a page out of the RLS book and
+    // treat the "hidden" row as if it does not exist.
+    throw new Error(`Order #${id} does not exist!`);
+  }
+
+  return `graphql:order:${id}`;
+};
+  
 
 const allUserOrdersTopic = async (_args: any, context: PostGraphileContext) => {
   const { user } = context;

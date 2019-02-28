@@ -16,10 +16,6 @@
 
 ### TODO
 
-* subscription security -- we need to prevent subscriptions for IDs that aren't ours.
-  even though PostGraphile gives us data security for free we're still leaking
-  *when* something changes for data we aren't privy to.
-
 * retire `get-pubsub`, refactor this gist into a library:
   * https://gist.github.com/benjie/839740697f5a1c46ee8da98a1efac218
   * include the necessary sql
