@@ -21,3 +21,6 @@
   * https://gist.github.com/benjie/839740697f5a1c46ee8da98a1efac218
   * include the necessary sql
   * use `pg.listen`
+
+# Analysis
+See google doc for numbers.
