@@ -16,7 +16,7 @@ export const getProjectionQuery = (knex: Knex) => (
           radians(?)
         )
       ) as latlon
-  `, [latlon.lon, latlon.lat, distanceMetres, degreesFromNorthCCW])
+  `, [latlon.lon, latlon.lat, distanceMetres, degreesFromNorthCCW]) // notice it's flipped in postgis
     .then(({ rows }) => fromGeoJSON(rows[0].latlon));
 
 export default getProjectionQuery;

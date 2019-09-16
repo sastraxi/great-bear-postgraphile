@@ -10,6 +10,6 @@ const setOrderLocationQuery = (knex: Knex) => (
     set
       current_latlon = st_setsrid(st_makepoint(?, ?), 4326)
     where id = ?
-  `, [latlon.lon, latlon.lat, orderId]);
+  `, [latlon.lon, latlon.lat, orderId]); // notice it's flipped in postgis
 
 export default setOrderLocationQuery;

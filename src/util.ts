@@ -18,7 +18,7 @@ export const frontendUrl = (path: string) =>
 export const fromGeoJSON = (geoJSON: string): LatLon => {
   if (!geoJSON) return null;
   const { coordinates } = JSON.parse(geoJSON);
-  return {
+  return { // notice it's flipped in postgis
     lat: coordinates[1],
     lon: coordinates[0],
   };
