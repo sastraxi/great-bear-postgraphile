@@ -42,7 +42,7 @@ The other way is to build some scaffolding up around the GraphQL calls by using 
 Where does `req.user` get set, though? We're using [passportjs](...) behind the scenes and storing the resolved valid user into `req.user`.
 
 * the initial setup is in [server.ts](src/server.ts)
-* the `applyPassport` function spans across [auth/index.ts](src/auth/index.ts) and [auth/local.ts](src/auth/local.ts); a similar approach can be taken if you'd like to e.g. integrate with a third-party identity provider
+* the `applyPassport` function spans across [auth/index.ts](src/auth/index.ts#L12) and [auth/local.ts](src/auth/local.ts); a similar approach can be taken if you'd like to e.g. integrate with a third-party identity provider
 
 ## Authorization
 
@@ -65,3 +65,7 @@ So now we can authenticate to
 
 We add to the GraphQL context for every request we handle in the system.
 
+* `user`
+* `sessionId`
+* `req` - allows interacting with express middleware
+* `ip`
