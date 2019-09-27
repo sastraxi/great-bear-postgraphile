@@ -157,7 +157,7 @@ We can define our own GraphQL queries and mutations that extend the schema that 
 
 * [cart/index.ts](src/postgraphile/cart/index.ts) defines the `addToCart`, `setCartQuantity`, and `resetCart` mutations. It also exposes the current `sessionId` and allows subscribing to cart events using `currentCart`
 
-* Similarly, [order/index.ts](src/postraphile/) defines `checkout` and allows subscribing to the events of one order (`orderById`) or the events of all orders visible to the user (`orders`)
+* Similarly, [order/index.ts](src/postgraphile/order/index.ts) defines `checkout` and allows subscribing to the events of one order (`orderById`) or the events of all orders visible to the user (`orders`)
 
 The resolver folders in each "schema directory", by convention, contain one file per resolver, with `resolverName` being implemented in `resolver/resolver-name.ts`. These extension schemas can refer to datatypes created by Graphile; for example, see [the definition of CartSubscription](src/postgraphile/cart/index.ts#L29) which refers to the Graphile-defined `Cart` type.
 
