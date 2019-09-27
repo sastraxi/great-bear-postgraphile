@@ -166,3 +166,27 @@ The resolver folders in each "schema directory", by convention, contain one file
 ## Subscriptions
 
 - weird in postgraphile
+- `005_...`
+- `pg_notify`
+- `get-pubsub` and that weirdness
+
+---
+
+## Custom "table" subscriptions
+
+- answer to Hasura's event triggers
+- implemented in `get-pubsub` as well
+- by convention, in [src/event/handler/](src/event/handler/)
+
+---
+
+## Computed functions
+
+- `009_geojson.js`
+
+---
+
+## GeoJSON support in Graphile
+
+* swapped lat / lon
+* no native support (see Order typedefs)
