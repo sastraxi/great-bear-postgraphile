@@ -22,7 +22,7 @@ This page will take you on a guided tour of the codebase. if you found it hard t
 
 ## Defining our data model
 
-I decided to use [knex](...) for database migrations because I knew it the best. Knex reads migrations in lexicographic order out of a folder; in this project that's `migrations/`.
+I decided to use [knex](...) for database migrations because I knew it the best. Knex reads migrations in lexicographic order out of a folder; in this project that's [migrations/](migrations/).
 
 In order to start using its migration system, we must first create a database. Let's do that by executing the commands in [the bootstrap folder](bootstrap/) using `psql`.
 
