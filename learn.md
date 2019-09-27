@@ -128,7 +128,7 @@ mutation {
   }
 ```
 
-```
+```graphql
 mutation {
   logout
 }
