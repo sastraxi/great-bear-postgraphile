@@ -1,8 +1,16 @@
 # This is a learning repo.
 
-This page will take you on a guided tour of the codebase. if you found it hard to follow, please submit a pull request with clarifications.
+This page will take you on a guided tour of the codebase. If you find it hard to follow, please feel free to submit a pull request with clarifications (or simply an issue!).
+
+## What we're building
+
+Great Bear is a food delivery application that allows users to order food to be dead-dropped by drones.
+
+---
 
 ## Graphile's design decisions
+
+* `snake_case` to `camelCase`
 
 ---
 
@@ -17,6 +25,7 @@ This page will take you on a guided tour of the codebase. if you found it hard t
 * Query - TODO
 * Mutation - TODO
 * Subscription - TODO
+* Transport - TODO
 
 ---
 
@@ -26,11 +35,21 @@ I decided to use [knex](...) for database migrations because I knew it the best.
 
 In order to start using its migration system, we must first create a database. Let's do that by executing the commands in [the bootstrap folder](bootstrap/) using `psql`.
 
+> I'm going to take a moment to plug another project of mine: [pgsh](https://github.com/sastraxi/pgsh). This git-inspired tool aims to help you branch your database, perform migrations, and more. Users of this tool can run `pgsh psql` to enter into a psql shell that's pointed at the same database as our `.env`.
+
 After that's done, we can start adding a schema to our newly-created postgres database. Take a look at [the first migration](migrations/001_system_and_user.js) for where this begins. 
 
 > Note that some migrations (like [004_graphql_subscription.js](migrations/004_graphql_subscription.js)) capture versions of functions that have since been replaced in newer migrations. I decided to leave these happy little accidents in as a testament to learning as-you-go.
 
 ---
+
+## .env
+
+Take a moment to `cp .env.example .env` and fill it in to reflect your environment.
+
+In particular, make sure that you set `DATABASE_URL` to point at the database you set up, choose a high-entropy `SESSION_SECRET`, and fill in your `STRIPE_SECRET_KEY` (a Stripe account can be created [for free](https://stripe.com)).
+
+--- 
 
 ## Authorization
 
@@ -101,7 +120,7 @@ query {
 }
 ```
 
-Success! Some data. So how do we solve the problem?
+Success! Some data. So how do we solve this problem generally?
 
 If we pass in a JWT secret on the command line using the `--jwt-secret` option, the `postgraphile` process will start pulling JWTs from the `Authorization:` HTTP header. If they're valid, it'll then set the claims included as `jwt.claims.*` in the transaction wrapping each SQL query (there's a reason this is the idiomatic way to set `user_id` with Graphile; it's so easy).
 
@@ -136,6 +155,8 @@ mutation {
 
 Because internally we're just delegating to passport, session semantics remain the same as they would be for regular HTTP calls. In this case, we're using [express-session](https://github.com/expressjs/session) to store a signed cookie with a session ID and serialized user ID.
 
+---
+
 ## Our context
 
 Notice that we are able to access the original express HTTP request in our GraphQL resolvers! See [contextFromRequest](src/postgraphile/index.ts#L103) to see how Graphile allows us to build our own context based on the incoming request. We add the following:
@@ -161,28 +182,78 @@ We can define our own GraphQL queries and mutations that extend the schema that 
 
 The resolver folders in each "schema directory", by convention, contain one file per resolver, with `resolverName` being implemented in `resolver/resolver-name.ts`. These extension schemas can refer to datatypes created by Graphile; for example, see [the definition of CartSubscription](src/postgraphile/cart/index.ts#L29) which refers to the Graphile-defined `Cart` type.
 
+These schema extension plugins are not the only type of plugins you can extend Graphile using; next, we'll take a look at a very different type of plugin.
+
 ---
 
-## Subscriptions
+## Subscriptions in Graphile
 
-- weird in postgraphile
-- `005_...`
-- `pg_notify`
-- `get-pubsub` and that weirdness
+In GraphQL, subscriptions are a special type of query that automatically pushes data to the client whenever it changes. Unlike in [the Hasura implementation](https://github.com/sastraxi/great-bear-hasura), subscriptions in Graphile require a fair bit of boilerplate on our end. The library provides:
+
+* a websocket transport layer, which lets us push data to the GraphQL client when things change;
+* a `@pgSubscription(topic)` decorator for our schema extensions, which will trigger our resolver whenever `pg_notify` is used with a given topic (a string like `order:54`)
+
+This second one requires a bit of explanation. Let's start by looking at a subscription resolver to see what they look like. I've written a smaller helper function called [subscriptionResolver](src/postgraphile/resolver/subscription.ts) that takes care of some of the boilerplate involved. Essentially, this function acts as the resolver for any subscriptions that use the `@pgSubscription` decorator introduced earlier.
+
+When the configured topic is trigged via `pg_notify`, this function will receive a payload (`event`) that we'll extract a value from (`payloadColumn`). We'll use that value to query the configured table (`qualifiedTable`). Essentially, we'll perform the SQL query
+
+```sql
+select * from <qualifiedTable> where <column> = <event[payloadColumn]>
+```
+
+... and either return all rows (`multi: true`) or just the first one (`multi: false`).
+
+> Take a few minutes to review the comments in this file as well as the official [Graphile documentation on subscriptions](https://TODO) before moving on.
+
+So that's all well and good, but what's all this `pg_notify` stuff? If we're just specifying an arbitrary string for the topic we're subscribing to, where else is this topic defined? The secret sauce here are database `TRIGGER`s that notify our code that new data is ready to be sent to GraphQL clients who have subscribed to the topic. Here's an example trigger from [014_orders_subscription_triggers.js](migrations/014_orders_subsription_triggers.js):
+
+```sql
+CREATE TRIGGER subscription_orders___insert
+AFTER INSERT ON app_public."order"
+FOR EACH ROW
+EXECUTE PROCEDURE app_public.graphql_subscription(
+  'orderInsert',        /* event */
+  'graphql:orders:$1',  /* topic */
+  'user_id',            /* $1 (column from OLD / NEW row) */
+  'id'                  /* extra value to select from row */
+);
+```
+
+To recap, the overall subscription flow for Graphile looks like this:
+
+1. A GraphQL client sends a `subscription { ... }` query to our Graphile endpoint. The topic function (examples [here](src/postgraphile/cart/index.ts#L13)) is executed with parameters from the GraphQL subscription, letting Graphile know to subscribe to this topic in its PostgreSQL connection
+2. Some SQL query modifies the contents of a table somehow -- an `INSERT`, `UPDATE`, or `DELETE`
+3. Triggers we've defined call our [app_public.graphql_subscription](migrations/013_graphql_subscription.js) function
+4. The function in turn calls `pg_notify` (see [lines 47 and 53](migrations/013_graphql_subscription.js#L47)) with the configured topic from the originating `TRIGGER`
+5. Graphile picks up this notification from the subscription created earlier, then calls our `subscriptionResolver` as above
+6. The resolver makes an SQL query to re-fetch the data, and returns it to Graphile to be sent to the GraphQL client via websocket
+
+> It's worth noting that the Graphile documentation provides a version of `app_public.graphql_subscription` that's been modified here to support using values other than the table's primary key in the topic.
+
+Once you get past the boilerplate required, Graphile's idea of subscriptions is extremely powerful and lets you wire things up however makes sense for your application.
 
 ---
 
 ## Custom "table" subscriptions
 
-- answer to Hasura's event triggers
-- implemented in `get-pubsub` as well
+Clearly, Hasura's subscriptions are a lot simpler to set up than Graphile's. In fact, the developer experience with them was so good I decided to re-implement their whole-table "watches" using Graphile, calling them *table subcriptions*.
+
+How are these different than the style that was just introduced? Well, rather than our GraphQL clients being the ones we notify, these will be more "internal" events that let us build our food delivery workflow in an event-driven style. We'll define when code should be run (for any new `INSERT`s on `app_public.order`, or maybe whenever we `UPDATE` the `cooked_at` column on that table). This lets us perform a business process for each row that transitions through a certain "edge".
+
+We hook into Graphile's pubsub instance to provide this functionality. See [get-pubsub.ts](src/postgraphile/get-pubsub.ts) for how we use a Graphile plugin to grab this.
+
+- `get-pubsub`
 - by convention, in [src/event/handler/](src/event/handler/)
 
 ---
 
 ## Computed functions
 
-- `009_geojson.js`
+One of the most useful things that Graphile lets us do is define computed "columns": these become fields on the types that are generated as part of introspection, but aren't represented in postgres as a column on the table. Instead, these are *functions* whose names take the form `schema.table_name_column_name`.
+
+For an example, take a look at [009_geojson.js](migrations/009_geojson.js). This migration defines a function `app_public.order_current_json`, which means that our `Order` type gets a `currentJson` field on it that we can query anywhere an order is returned. The value of this column is defined by the return value of the function; it doesn't even have to use the table in question as part of its definition.
+
+> In order to be exposed as a computed column, these functions must take a row from the table in question and be marked as `STABLE`, which essentially means the function is only reading from the database (not writing or modifying anything).
 
 ---
 
