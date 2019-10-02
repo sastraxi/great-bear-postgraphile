@@ -1,10 +1,22 @@
-# This is a learning repo.
+# This is a learning repository
 
 This page will take you on a guided tour of the codebase. If you find it hard to follow, please feel free to submit a pull request with clarifications (or simply an issue!).
 
 ## What we're building
 
-Great Bear is a food delivery application that allows users to order food to be dead-dropped by drones.
+Great Bear is a food delivery application that allows users to order food to be delivered via drone. Well, at least that's what we're simulating. The frontend can be found in the [great-bear-frontend](https://github.com/sastraxi/great-bear-frontend) repository; this codebase is a compatible backend.
+
+### User Stories
+
+* As an anonymous user I can signup using email and password so I can keep a history of my orders
+* As a registered user I can login so I can use the site
+* As a logged in user I can logout so I can use the site on a shared computer
+* As a logged in user I can add items to a shopping cart so I can take my time choosing my order
+* As a logged in user I can remove or modify the quantity of items in my shopping cart so I can change my mind
+* As a logged in user I can choose my delivery location at checkout so I don't have to maintain a list of addresses
+* As a logged in user I can pay for all the items in my cart by credit card at checkout so I can save time
+* As a logged in user I can track the status of my order in real-time so I know when to expect my food
+* As a logged in user I can view a list of my previous and current orders so I can see how much I've spent and what I spent it on
 
 ---
 
@@ -48,6 +60,8 @@ After that's done, we can start adding a schema to our newly-created postgres da
 Take a moment to `cp .env.example .env` and fill it in to reflect your environment.
 
 In particular, make sure that you set `DATABASE_URL` to point at the database you set up, choose a high-entropy `SESSION_SECRET`, and fill in your `STRIPE_SECRET_KEY` (a Stripe account can be created [for free](https://stripe.com)).
+
+> `.env` files are an idiomatic way of providing secrets to node apps in development. See [The Twelve-Factor App](https://12factor.net) for more information on what this makes sense. Remember to never commit files containing secrets to version control!
 
 --- 
 
@@ -203,7 +217,7 @@ select * from <qualifiedTable> where <column> = <event[payloadColumn]>
 
 ... and either return all rows (`multi: true`) or just the first one (`multi: false`).
 
-> Take a few minutes to review the comments in this file as well as the official [Graphile documentation on subscriptions](https://TODO) before moving on.
+> Take a few minutes to review the comments in this file as well as the official [Graphile documentation on subscriptions](https://www.graphile.org/postgraphile/subscriptions/) before moving on.
 
 So that's all well and good, but what's all this `pg_notify` stuff? If we're just specifying an arbitrary string for the topic we're subscribing to, where else is this topic defined? The secret sauce here are database `TRIGGER`s that notify our code that new data is ready to be sent to GraphQL clients who have subscribed to the topic. Here's an example trigger from [014_orders_subscription_triggers.js](migrations/014_orders_subsription_triggers.js):
 
@@ -242,8 +256,9 @@ How are these different than the style that was just introduced? Well, rather th
 
 We hook into Graphile's pubsub instance to provide this functionality. See [get-pubsub.ts](src/postgraphile/get-pubsub.ts) for how we use a Graphile plugin to grab this.
 
-- `get-pubsub`
-- by convention, in [src/event/handler/](src/event/handler/)
+
+
+- by convention, in [src/event/handler/*.ts](src/event/handler/)
 
 ---
 
