@@ -20,13 +20,15 @@ Great Bear is a food delivery application that allows users to order food to be 
 
 ---
 
-## Graphile's design decisions
+## Introducing PostGraphile
 
-* `snake_case` to `camelCase`
+Formerly known as PostGraphQL, [PostGraphile](https://graphile.org) advertises itself as an "extensible high-performance automatic GraphQL API for PostgreSQL". Like [Hasura](https://hasura.io), it acts as an intermediary between a GraphQL client (your frontend, for example) and a postgres database, allowing you to perform queries using GraphQL instead of SQL. Like Hasura, it solves the "N+1 query problem" by avoiding round-trips to the database:
 
----
+> [We leverage graphile-build's look-ahead features when resolving a GraphQL request so that a single root level query, no matter how nested, is compiled into just one SQL query.](https://www.graphile.org/postgraphile/performance/#how-is-it-so-fast)
 
-## This app's architectural decisions
+One tip to keep in mind while we explore PostGraphile is that it does some renaming of your schema. For example, it changes column names into `camelCase` and table names into singular `UpperCamelCase`. There are many other rules for "inflection" that you can read about in [the documentation](https://graphile.org/postgraphile/inflection/). This repository also follows [the recommended namespacing technique](https://graphile.org/postgraphile/namespaces/) for postgres schemas.
+
+I suggest referring back to [the official documentation](https://www.graphile.org/postgraphile/introduction/) if you get stuck on a concept.
 
 ---
 
@@ -77,12 +79,12 @@ As you saw in [the migrations folder](migrations/), we have defined row-level se
 
 ---
 
-## Graphile, two ways
+## PostGraphile, two ways
 
 At this point, we could use the command line tools provided by Graphile to introspect our database and expose a GraphQL endpoint:
 
 ```bash
-$ postgraphile -c postgres://app_user@localhost/gbpg [--watch]
+$ postPostGraphile -c postgres://app_user@localhost/gbpg [--watch]
 [...]
   ‣ GraphQL endpoint served at http://localhost:5000/graphql
   ‣ GraphiQL endpoint served at http://localhost:5000/graphiql
@@ -113,9 +115,9 @@ query {
 }
 ```
 
-Wait, where did that query come from? Graphile [automatically generates these](https://www.graphile.org/postgraphile/tables/) from our tables and foreign key relationships. Pretty useful, eh?
+Wait, where did that query come from? PostGraphile [automatically generates these](https://www.graphile.org/postgraphile/tables/) from our tables and foreign key relationships. Pretty useful, eh?
 
-> The whole "Tables" section linked above is worthwhile reading to wrap your head around what Graphile gives you out-of-the-box.
+> The whole "Tables" section linked above is worthwhile reading to wrap your head around what PostGraphile gives you out-of-the-box.
 
 There's a problem, though: even if there are orders in our database, we won't see them. In fact, we can't make any calls that require access to sensitive data at all! This is because nothing is setting the `jwt.claims.user_id` variable that our `app_user`'s `GRANT` statements use to make rows in our data model visible. 
 
@@ -136,9 +138,9 @@ query {
 
 Success! Some data. So how do we solve this problem generally?
 
-If we pass in a JWT secret on the command line using the `--jwt-secret` option, the `postgraphile` process will start pulling JWTs from the `Authorization:` HTTP header. If they're valid, it'll then set the claims included as `jwt.claims.*` in the transaction wrapping each SQL query (there's a reason this is the idiomatic way to set `user_id` with Graphile; it's so easy).
+If we pass in a JWT secret on the command line using the `--jwt-secret` option, the `postgraphile` process will start pulling JWTs from the `Authorization:` HTTP header. If they're valid, it'll then set the claims included as `jwt.claims.*` in the transaction wrapping each SQL query (there's a reason this is the idiomatic way to set `user_id` with PostGraphile; it's so easy).
 
-The other way is to build some scaffolding up around the GraphQL calls by using Graphile as a library. This way, we don't have to be confined to using JWTs and can instead use http-only cookies (my preference). Take a look at [this code](src/postgraphile/index.ts) where we start a Postgraphile server inside of our app, and particularly the `pgSettingsFromRequest` function where we grab user information out of the HTTP (express) request.
+The other way is to build some scaffolding up around the GraphQL calls by using PostGraphile as a library. This way, we don't have to be confined to using JWTs and can instead use http-only cookies (my preference). Take a look at [this code](src/postgraphile/index.ts) where we start a PostGraphile server inside of our app, and particularly the `pgSettingsFromRequest` function where we grab user information out of the HTTP (express) request.
 
 > Notice that we also set the postgres `role` in this function: administrators perform SQL queries as `app_admin` while regular users' queries are executed as `app_user`.
 
@@ -146,7 +148,7 @@ The other way is to build some scaffolding up around the GraphQL calls by using 
 
 ## Authentication
 
-Where does `req.user` get set, though? Graphile only performs authorization; for authentication, we're using [passportjs](...) behind the scenes and storing the resolved user into `req.user` using its express middleware.
+Where does `req.user` get set, though? PostGraphile only performs authorization; for authentication, we're using [passportjs](...) behind the scenes and storing the resolved user into `req.user` using its express middleware.
 
 * the initial setup is in [server.ts](src/server.ts)
 * the `applyPassport` function spans across [auth/index.ts](src/auth/index.ts#L12) and [auth/local.ts](src/auth/local.ts); a similar approach can be taken if you'd like to e.g. integrate with a third-party identity provider
@@ -173,7 +175,7 @@ Because internally we're just delegating to passport, session semantics remain t
 
 ## Our context
 
-Notice that we are able to access the original express HTTP request in our GraphQL resolvers! See [contextFromRequest](src/postgraphile/index.ts#L103) to see how Graphile allows us to build our own context based on the incoming request. We add the following:
+Notice that we are able to access the original express HTTP request in our GraphQL resolvers! See [contextFromRequest](src/postgraphile/index.ts#L103) to see how PostGraphile allows us to build our own context based on the incoming request. We add the following:
 
 * `user` - as resolved by passport
 * `sessionId` - express-session ID, used to have different shopping carts in each browser
@@ -184,9 +186,9 @@ Notice that we are able to access the original express HTTP request in our Graph
 
 ## Stitching everything together
 
-Let's step back for a second. As we saw previously, Graphile generates queries like `itemsList` for us based on our tables (`app_public.item`). It also creates mutations like `createItem` or `updateUserById` by default.
+Let's step back for a second. As we saw previously, PostGraphile generates queries like `itemsList` for us based on our tables (`app_public.item`). It also creates mutations like `createItem` or `updateUserById` by default.
 
-We can define our own GraphQL queries and mutations that extend the schema that Graphile builds based on its introspection of our database. We do this by building extend schema *plugins*; in this codebase, the convention is to store these plugins in `src/postgraphile/*/index.ts`:
+We can define our own GraphQL queries and mutations that extend the schema that PostGraphile builds based on its introspection of our database. We do this by building extend schema *plugins*; in this codebase, the convention is to store these plugins in `src/postgraphile/*/index.ts`:
 
 * [auth/index.ts](src/postgraphile/auth/index.ts) defines the schema for `login`, `signup`, and `logout` (we saw the resolvers for these earlier)
 
@@ -194,15 +196,15 @@ We can define our own GraphQL queries and mutations that extend the schema that 
 
 * Similarly, [order/index.ts](src/postgraphile/order/index.ts) defines `checkout` and allows subscribing to the events of one order (`orderById`) or the events of all orders visible to the user (`orders`)
 
-The resolver folders in each "schema directory", by convention, contain one file per resolver, with `resolverName` being implemented in `resolver/resolver-name.ts`. These extension schemas can refer to datatypes created by Graphile; for example, see [the definition of CartSubscription](src/postgraphile/cart/index.ts#L29) which refers to the Graphile-defined `Cart` type.
+The resolver folders in each "schema directory", by convention, contain one file per resolver, with `resolverName` being implemented in `resolver/resolver-name.ts`. These extension schemas can refer to datatypes created by PostGraphile; for example, see [the definition of CartSubscription](src/postgraphile/cart/index.ts#L29) which refers to the PostGraphile-defined `Cart` type.
 
-These schema extension plugins are not the only type of plugins you can extend Graphile using; next, we'll take a look at a very different type of plugin.
+These schema extension plugins are not the only type of plugins you can extend PostGraphile using; next, we'll take a look at a very different type of plugin.
 
 ---
 
-## Subscriptions in Graphile
+## Subscriptions in PostGraphile
 
-In GraphQL, subscriptions are a special type of query that automatically pushes data to the client whenever it changes. Unlike in [the Hasura implementation](https://github.com/sastraxi/great-bear-hasura), subscriptions in Graphile require a fair bit of boilerplate on our end. The library provides:
+In GraphQL, subscriptions are a special type of query that automatically pushes data to the client whenever it changes. Unlike in [the Hasura implementation](https://github.com/sastraxi/great-bear-hasura), subscriptions in PostGraphile require a fair bit of boilerplate on our end. The library provides:
 
 * a websocket transport layer, which lets us push data to the GraphQL client when things change;
 * a `@pgSubscription(topic)` decorator for our schema extensions, which will trigger our resolver whenever `pg_notify` is used with a given topic (a string like `order:54`)
@@ -217,7 +219,7 @@ select * from <qualifiedTable> where <column> = <event[payloadColumn]>
 
 ... and either return all rows (`multi: true`) or just the first one (`multi: false`).
 
-> Take a few minutes to review the comments in this file as well as the official [Graphile documentation on subscriptions](https://www.graphile.org/postgraphile/subscriptions/) before moving on.
+> Take a few minutes to review the comments in this file as well as the official [PostGraphile documentation on subscriptions](https://www.graphile.org/postgraphile/subscriptions/) before moving on.
 
 So that's all well and good, but what's all this `pg_notify` stuff? If we're just specifying an arbitrary string for the topic we're subscribing to, where else is this topic defined? The secret sauce here are database `TRIGGER`s that notify our code that new data is ready to be sent to GraphQL clients who have subscribed to the topic. Here's an example trigger from [014_orders_subscription_triggers.js](migrations/014_orders_subsription_triggers.js):
 
@@ -233,28 +235,28 @@ EXECUTE PROCEDURE app_public.graphql_subscription(
 );
 ```
 
-To recap, the overall subscription flow for Graphile looks like this:
+To recap, the overall subscription flow for PostGraphile looks like this:
 
-1. A GraphQL client sends a `subscription { ... }` query to our Graphile endpoint. The topic function (examples [here](src/postgraphile/cart/index.ts#L13)) is executed with parameters from the GraphQL subscription, letting Graphile know to subscribe to this topic in its PostgreSQL connection
+1. A GraphQL client sends a `subscription { ... }` query to our PostGraphile endpoint. The topic function (examples [here](src/postgraphile/cart/index.ts#L13)) is executed with parameters from the GraphQL subscription, letting PostGraphile know to subscribe to this topic in its PostgreSQL connection
 2. Some SQL query modifies the contents of a table somehow -- an `INSERT`, `UPDATE`, or `DELETE`
 3. Triggers we've defined call our [app_public.graphql_subscription](migrations/013_graphql_subscription.js) function
 4. The function in turn calls `pg_notify` (see [lines 47 and 53](migrations/013_graphql_subscription.js#L47)) with the configured topic from the originating `TRIGGER`
-5. Graphile picks up this notification from the subscription created earlier, then calls our `subscriptionResolver` as above
-6. The resolver makes an SQL query to re-fetch the data, and returns it to Graphile to be sent to the GraphQL client via websocket
+5. PostGraphile picks up this notification from the subscription created earlier, then calls our `subscriptionResolver` as above
+6. The resolver makes an SQL query to re-fetch the data, and returns it to PostGraphile to be sent to the GraphQL client via websocket
 
-> It's worth noting that the Graphile documentation provides a version of `app_public.graphql_subscription` that's been modified here to support using values other than the table's primary key in the topic.
+> It's worth noting that the PostGraphile documentation provides a version of `app_public.graphql_subscription` that's been modified here to support using values other than the table's primary key in the topic.
 
-Once you get past the boilerplate required, Graphile's idea of subscriptions is extremely powerful and lets you wire things up however makes sense for your application.
+Once you get past the boilerplate required, PostGraphile's idea of subscriptions is extremely powerful and lets you wire things up however makes sense for your application.
 
 ---
 
 ## Custom "table" subscriptions
 
-Clearly, Hasura's subscriptions are a lot simpler to set up than Graphile's. In fact, the developer experience with them was so good I decided to re-implement their whole-table "watches" using Graphile, calling them *table subcriptions*.
+Clearly, Hasura's subscriptions are a lot simpler to set up than PostGraphile's. In fact, the developer experience with them was so good I decided to re-implement their whole-table "watches" using PostGraphile, calling them *table subcriptions*.
 
 How are these different than the style that was just introduced? Well, rather than our GraphQL clients being the ones we notify, these will be more "internal" events that let us build our food delivery workflow in an event-driven style. We'll define when code should be run (for any new `INSERT`s on `app_public.order`, or maybe whenever we `UPDATE` the `cooked_at` column on that table). This lets us perform a business process for each row that transitions through a certain "edge".
 
-We hook into Graphile's pubsub instance to provide this functionality. See [get-pubsub.ts](src/postgraphile/get-pubsub.ts) for how we use a Graphile plugin to grab this.
+We hook into PostGraphile's pubsub instance to provide this functionality. See [get-pubsub.ts](src/postgraphile/get-pubsub.ts) for how we use a PostGraphile plugin to grab this.
 
 
 
@@ -264,7 +266,7 @@ We hook into Graphile's pubsub instance to provide this functionality. See [get-
 
 ## Computed functions
 
-One of the most useful things that Graphile lets us do is define computed "columns": these become fields on the types that are generated as part of introspection, but aren't represented in postgres as a column on the table. Instead, these are *functions* whose names take the form `schema.table_name_column_name`.
+One of the most useful things that PostGraphile lets us do is define computed "columns": these become fields on the types that are generated as part of introspection, but aren't represented in postgres as a column on the table. Instead, these are *functions* whose names take the form `schema.table_name_column_name`.
 
 For an example, take a look at [009_geojson.js](migrations/009_geojson.js). This migration defines a function `app_public.order_current_json`, which means that our `Order` type gets a `currentJson` field on it that we can query anywhere an order is returned. The value of this column is defined by the return value of the function; it doesn't even have to use the table in question as part of its definition.
 
@@ -272,7 +274,7 @@ For an example, take a look at [009_geojson.js](migrations/009_geojson.js). This
 
 ---
 
-## GeoJSON support in Graphile
+## GeoJSON support in PostGraphile
 
 * swapped lat / lon
 * no native support (see Order typedefs)

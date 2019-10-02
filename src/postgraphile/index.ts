@@ -11,7 +11,7 @@ import {
 import passport from 'passport';
 import createDebugger from 'debug';
 
-// FIXME: why does ts complain when importing directly from postgraphile?
+// FIXME: why does ts complain when importing directly from 'postgraphile'?
 import { PostGraphileOptions } from 'postgraphile/build/interfaces';
 
 // @ts-ignore
