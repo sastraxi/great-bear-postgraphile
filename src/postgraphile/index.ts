@@ -97,7 +97,6 @@ export const pgSettingsFromRequest = (req: http.IncomingMessage) => {
     ...(req.user
       ? { 'jwt.claims.user_id': String(req.user.id) }
       : {}),
-    // 'jwt.claims.user_id': '1',
     ...(req.session
       ? { 'jwt.claims.session_id': req.session.id }
       : {}),
@@ -114,7 +113,6 @@ export const pgSettingsFromRequest = (req: http.IncomingMessage) => {
 export const contextFromRequest = (req: http.IncomingMessage) => ({
   ip: req.ip,
   user: req.user,
-  // user: { id: 1 },
   sessionId: req.session && req.session.id,
   req,
 });
@@ -154,7 +152,7 @@ export default async (
   // playground, for development and testing
   const playground = expressPlayground({
     endpoint: '/graphql',
-    subscriptionEndpoint: `ws://localhost:3000/graphql`, // FIXME: env var
+    subscriptionEndpoint: `ws://${process.env.HOST}:${process.env.PORT}/graphql`,
   });
   app.get('/playground', (req, res, next) => {
     if (process.env.NODE_ENV === 'development' || (req.user && req.user.isAdmin)) {
