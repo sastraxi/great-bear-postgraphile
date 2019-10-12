@@ -24,6 +24,7 @@ import AuthSchemaPlugin from './auth';
 import GetPubSubPlugin from './get-pubsub';
 
 const authDebug = createDebugger('gbpg:auth');
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 const REFLECT_SCHEMA = 'app_public';
 
@@ -40,6 +41,16 @@ const EXTEND_SCHEMA_PLUGINS: Plugin[] = [
  * Options common to schema-mode and middleware-mode.
  */
 const COMMON_OPTIONS: PostGraphileOptions = {
+
+  // warning: might log some sensitive data.
+  showErrorStack: isDevelopment,
+  extendedErrors: isDevelopment &&
+    [
+      'severity', 'code', 'detail', 'hint',
+      'position', 'internalPosition',
+      'internalQuery', 'where', 'schema', 'table', 'column', 'dataType', 'constraint',
+      'file', 'line', 'routine',
+    ],
 
   appendPlugins: [
     // allOrders -> orders, cartItemsByCartItemId -> cartItems
