@@ -12,7 +12,7 @@ const orderTopic = async ({ id }: IdParam, { knex, user }: PostGraphileContext) 
     throw new Error('You must be logged in.');
   }
 
-  const orderUserId = await knex('app_public.cart')
+  const orderUserId = await knex('app_public.order')
     .where('id', id)
     .first('user_id')
     .then(o => o && o.user_id);
