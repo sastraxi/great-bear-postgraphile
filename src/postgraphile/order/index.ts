@@ -65,7 +65,7 @@ const typeDefs = gql`
   }
 
   extend type Subscription {
-    orderById(id: Int!): OrderSubscriptionPayload @pgSubscription(topic: ${embed(orderTopic)})
+    order(id: Int!): OrderSubscriptionPayload @pgSubscription(topic: ${embed(orderTopic)})
     orders: OrdersSubscriptionPayload @pgSubscription(topic: ${embed(allUserOrdersTopic)})
   }
 `;
