@@ -49,7 +49,7 @@
     "@types/stripe": "^6.19.7",
     "dotenv-cli": "^1.4.0",
     "nodemon": "^1.18.9",
-    "pgsh": "^0.4.0",
+    "pgsh": "^0.8.2",
     "tslint": "^5.12.1",
     "tslint-config-airbnb": "^5.11.1",
     "typescript": "^3.3.1"
