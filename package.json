@@ -27,7 +27,7 @@
     "graphql-resolvers": "^0.3.3",
     "graphql-subscriptions": "^1.1.0",
     "knex": "^0.19.5",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
