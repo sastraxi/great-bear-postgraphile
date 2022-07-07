@@ -28,7 +28,7 @@
     "graphql-subscriptions": "^1.1.0",
     "knex": "^0.19.5",
     "lodash": "^4.17.11",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "postgraphile": "^4.4.4",
