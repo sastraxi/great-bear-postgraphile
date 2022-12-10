@@ -20,7 +20,7 @@
     "cors": "^2.8.5",
     "debug": "^4.1.1",
     "dotenv": "^6.2.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-session": "^1.17.0",
     "graphile-utils": "^4.4.5",
     "graphql-playground-middleware-express": "^1.7.12",
