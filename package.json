@@ -26,7 +26,7 @@
     "graphql-playground-middleware-express": "^1.7.12",
     "graphql-resolvers": "^0.3.3",
     "graphql-subscriptions": "^1.1.0",
-    "knex": "^0.19.5",
+    "knex": "^2.4.0",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "passport": "^0.4.0",
